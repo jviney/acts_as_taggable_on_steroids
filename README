@@ -1,0 +1,60 @@
+= acts_as_taggable_on_steroids
+
+This plugin is based on acts_as_taggable by DHH but includes extras
+such as tests, smarter tag assignment, and tag cloud calculations.
+
+Thanks to www.fanacious.com for allowing this plugin to be released. Please check out
+their site to show your support.
+
+== Resources
+
+Install
+  * script/plugin install http://svn.viney.net.nz/things/rails/plugins/acts_as_taggable_on_steroids
+
+== Usage
+
+=== Basic tagging
+
+Using the examples from the tests, let's suppose we have users that have many posts and we want those
+posts to be able to be tagged by the user.
+
+As usual, we add +acts_as_taggable+ to the Post class:
+
+  class Post < ActiveRecord::Base
+    acts_as_taggable
+    
+    belongs_to :user
+  end
+  
+We can now use the tagging methods provided by acts_as_taggable, <tt>tag_list</tt> and <tt>tag_list=</tt>. Both these
+methods work like regular attribute accessors.
+
+  p = Post.find(:first)
+  p.tag_list # ""
+  p.tag_list = "Funny, Silly"
+  p.save
+  p.reload.tag_list # "Funny, Silly"
+
+=== Tag cloud calculations
+
+To construct tag clouds, the frequency of each tag needs to be calculated.
+Because we specified +acts_as_taggable+ on the <tt>Post</tt> class, we can
+get a calculation of all the tag counts by using <tt>Post.tag_counts</tt>. But what if we wanted a tag count for
+an individual user's posts? To achieve this we extend the <tt>:posts</tt> association like so:
+
+  class User < ActiveRecord::Base
+    has_many :posts, :extend => TagCountsExtension
+  end
+  
+This extension now allows us to do the following:
+
+  User.find(:first).posts.tag_counts
+  
+This can be used to construct a tag cloud for the posts of an individual user. The +TagCountsExtension+ should
+only be used on associations that have +acts_as_taggable+ defined.
+  
+Problems, comments, and suggestions all welcome. jonathan.viney@gmail.com
+
+== Credits
+
+www.fanacious.com

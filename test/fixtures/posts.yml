@@ -1,0 +1,24 @@
+jonathan_sky:
+  id: 1
+  user_id: 1
+  text: The sky is particularly blue today
+  
+jonathan_grass:
+  id: 2
+  user_id: 1
+  text: The grass seems very green
+  
+jonathan_rain:
+  id: 3
+  user_id: 1
+  text: Why does the rain fall?
+  
+sam_ground:
+  id: 4
+  user_id: 2
+  text: The ground is looking too brown
+  
+sam_flowers:
+  id: 5
+  user_id: 2
+  text: Why are the flowers dead?
