@@ -107,9 +107,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   end
   
   def test_read_tag_list_with_commas
-    assert_equal "Question, Crazy animal", photos(:jonathan_questioning_dog).tag_list
-  rescue
-    assert_equal "Crazy animal, Question", photos(:jonathan_questioning_dog).tag_list
+    assert ["Question, Crazy animal", "Crazy animal, Question"].include?(photos(:jonathan_questioning_dog).tag_list)
   end
   
   def test_clear_tag_list_with_nil
