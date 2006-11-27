@@ -34,6 +34,6 @@ class Tag < ActiveRecord::Base
   end
   
   def count
-    @attributes['count'].to_i if @attributes.include?('count')
+    read_attribute(:count).to_i
   end
 end
