@@ -27,13 +27,16 @@ module ActiveRecord
           return [] if tags.empty?
           tags.map!(&:to_s)
           
-          conditions = sanitize_sql(['tags.name in (?)', tags])
-          conditions << "and #{sanitize_sql(options.delete(:conditions))}" if options[:conditions]
+          conditions = sanitize_sql(['tags.name IN (?)', tags])
+          conditions << " AND #{sanitize_sql(options.delete(:conditions))}" if options[:conditions]
+          
+          group = "taggings.taggable_id HAVING COUNT(taggings.taggable_id) = #{tags.size}" if options.delete(:match_all)
           
           find(:all, { :select => "DISTINCT #{table_name}.*",
-            :joins => "left outer join taggings on taggings.taggable_id = #{table_name}.#{primary_key} and taggings.taggable_type = '#{name}' " +
-                      "left outer join tags on tags.id = taggings.tag_id",
-            :conditions => conditions }.merge(options))
+            :joins => "LEFT OUTER JOIN taggings ON taggings.taggable_id = #{table_name}.#{primary_key} AND taggings.taggable_type = '#{name}' " +
+                      "LEFT OUTER JOIN tags ON tags.id = taggings.tag_id",
+            :conditions => conditions,
+            :group      => group }.merge(options))
         end
         
         # Options:

@@ -23,6 +23,11 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equal [], Photo.find_tagged_with([Tag.new(:name => 'unsaved tag')])
   end
   
+  def test_find_tagged_with_matching_all_tags
+    assert_equivalent [photos(:jonathan_dog)], Photo.find_tagged_with('Crazy animal, "Nature"', :match_all => true)
+    assert_equivalent [posts(:jonathan_sky), posts(:sam_flowers)], Post.find_tagged_with(['Very good', 'Nature'], :match_all => true)
+  end
+  
   def test_basic_tag_counts_on_class
     assert_tag_counts Post.tag_counts, :good => 2, :nature => 5, :question => 1, :bad => 1
     assert_tag_counts Photo.tag_counts, :good => 1, :nature => 3, :question => 1, :bad => 1, :animal => 3

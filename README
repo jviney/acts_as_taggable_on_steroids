@@ -35,6 +35,17 @@ methods work like regular attribute accessors.
   p.save
   p.reload.tag_list # "Funny, Silly"
 
+=== Finding tagged objects
+
+To retrieve objects tagged with a certain tag, use find_tagged_with.
+
+  Post.find_tagged_with('Funny, Silly')
+  
+By default, find_tagged_with will find objects that have any of the given tags. To
+find only objects that are tagged with all the given tags, use match_all.
+
+  Post.find_tagged_with('Funny, Silly', :match_all => true)
+
 === Tag cloud calculations
 
 To construct tag clouds, the frequency of each tag needs to be calculated.
