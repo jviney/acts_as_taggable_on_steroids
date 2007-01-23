@@ -1,5 +1,11 @@
 = acts_as_taggable_on_steroids
 
+If you find this plugin useful, please consider a donation to show your support!
+
+  http://www.paypal.com/cgi-bin/webscr?cmd=_send-money&email=jonathan.viney@gmail.com
+  
+== Instructions
+
 This plugin is based on acts_as_taggable by DHH but includes extras
 such as tests, smarter tag assignment, and tag cloud calculations.
 
