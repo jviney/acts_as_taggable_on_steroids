@@ -85,6 +85,13 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equivalent Tag.parse('"Very good", Nature, One, Two'), Tag.parse(posts(:jonathan_sky).tag_list)
   end
   
+  def test_duplicate_tags_ignored
+    assert posts(:jonathan_sky).update_attributes(:tag_list => "Test, Test")
+    assert_equal "Test", posts(:jonathan_sky).tag_list
+    assert posts(:jonathan_sky).update_attributes(:tag_list => "Test, Test, Test")
+    assert_equal "Test", posts(:jonathan_sky).reload.tag_list
+  end
+  
   def test_remove_tag
     assert_equivalent Tag.parse('"Very good", Nature'), Tag.parse(posts(:jonathan_sky).tag_list)
     assert posts(:jonathan_sky).update_attributes(:tag_list => "Nature")

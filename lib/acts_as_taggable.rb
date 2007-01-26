@@ -92,7 +92,7 @@ module ActiveRecord
         end
         
         def write_tags(list)
-          new_tag_names = Tag.parse(list)
+          new_tag_names = Tag.parse(list).uniq
           old_tagging_ids = []
           
           Tag.transaction do
@@ -101,7 +101,7 @@ module ActiveRecord
               index ? new_tag_names.delete_at(index) : old_tagging_ids << tagging.id
             end
             
-            Tagging.delete_all(['id in (?)', old_tagging_ids]) unless old_tagging_ids.empty?
+            Tagging.delete_all(['id in (?)', old_tagging_ids]) if old_tagging_ids.any?
             
             # Create any new tags/taggings
             new_tag_names.each do |name|
