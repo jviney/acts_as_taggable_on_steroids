@@ -49,31 +49,34 @@ module ActiveRecord
         #  :at_most - Exclude tags with a frequency greater then the given value
         def tag_counts(options = {})
           options.assert_valid_keys :start_at, :end_at, :conditions, :at_least, :at_most, :order, :limit
-          
+
+          scope = scope(:find)
           start_at = sanitize_sql(['taggings.created_at >= ?', options[:start_at]]) if options[:start_at]
           end_at = sanitize_sql(['taggings.created_at <= ?', options[:end_at]]) if options[:end_at]
-          options[:conditions] = sanitize_sql(options[:conditions]) if options[:conditions]
           
-          conditions = [options[:conditions], start_at, end_at].compact.join(' and ')
+          conditions = [
+            "taggings.taggable_type = '#{name}'",
+            options[:conditions],
+            scope && scope[:conditions],
+            start_at,
+            end_at
+          ]
+          conditions = conditions.compact.join(' and ')
           
-          at_least = sanitize_sql(['count >= ?', options[:at_least]]) if options[:at_least]
-          at_most = sanitize_sql(['count <= ?', options[:at_most]]) if options[:at_most]
-          having = [at_least, at_most].compact.join(' and ')
-          
-          order = "order by #{options[:order]}" if options[:order]
-          limit = sanitize_sql(['limit ?', options[:limit]]) if options[:limit]
-          
-          Tag.find_by_sql <<-END
-            select tags.id, tags.name, count(*) as count
-            from tags left outer join taggings on tags.id = taggings.tag_id
-                      left outer join #{table_name} on #{table_name}.id = taggings.taggable_id
-            where taggings.taggable_type = "#{name}"
-              #{"and #{conditions}" unless conditions.blank?}
-            group by tags.id
-            having count(*) > 0 #{"and #{having}" unless having.blank?}
-            #{order}
-            #{limit}
-          END
+          at_least  = sanitize_sql(['count >= ?', options[:at_least]]) if options[:at_least]
+          at_most   = sanitize_sql(['count <= ?', options[:at_most]]) if options[:at_most]
+          having    = [at_least, at_most].compact.join(' and ')
+          group_by  = 'tags.id having count(*) > 0'
+          group_by << " and #{having}" unless having.blank?
+
+          Tag.find(:all,
+            :select     => 'tags.id, tags.name, COUNT(*) AS count', 
+            :joins      => "LEFT OUTER JOIN taggings ON tags.id = taggings.tag_id LEFT OUTER JOIN #{table_name} ON #{table_name}.#{primary_key} = taggings.taggable_id",
+            :conditions => conditions,
+            :group      => group_by,
+            :order      => options[:order],
+            :limit      => options[:limit]
+          )
         end
       end
       

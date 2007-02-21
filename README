@@ -59,18 +59,10 @@ find only objects that are tagged with all the given tags, use match_all.
 To construct tag clouds, the frequency of each tag needs to be calculated.
 Because we specified +acts_as_taggable+ on the <tt>Post</tt> class, we can
 get a calculation of all the tag counts by using <tt>Post.tag_counts</tt>. But what if we wanted a tag count for
-an individual user's posts? To achieve this we extend the <tt>:posts</tt> association like so:
-
-  class User < ActiveRecord::Base
-    has_many :posts, :extend => TagCountsExtension
-  end
-  
-This extension now allows us to do the following:
+an single user's posts? To achieve this we call tag_counts on the association:
 
   User.find(:first).posts.tag_counts
   
-This can be used to construct a tag cloud for the posts of an individual user. The +TagCountsExtension+ should
-only be used on associations that have +acts_as_taggable+ defined.
   
 Problems, comments, and suggestions all welcome. jonathan.viney@gmail.com
 

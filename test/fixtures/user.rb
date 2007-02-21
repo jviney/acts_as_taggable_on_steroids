@@ -1,4 +1,4 @@
 class User < ActiveRecord::Base
-  has_many :posts, :extend => TagCountsExtension
-  has_many :photos, :extend => TagCountsExtension
+  has_many :posts
+  has_many :photos
 end

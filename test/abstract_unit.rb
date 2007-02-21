@@ -13,10 +13,10 @@ require 'active_record/fixtures'
 require File.dirname(__FILE__) + '/../lib/acts_as_taggable'
 require File.dirname(__FILE__) + '/../lib/tag'
 require File.dirname(__FILE__) + '/../lib/tagging'
-require File.dirname(__FILE__) + '/../lib/tag_counts_extension'
 
-config = YAML::load(IO.read(File.dirname(__FILE__) + '/database.yml'))
 ActiveRecord::Base.logger = Logger.new(File.dirname(__FILE__) + '/debug.log')
+config = YAML::load(IO.read(File.dirname(__FILE__) + '/database.yml'))
+ActiveRecord::Base.configurations = config
 ActiveRecord::Base.establish_connection(config[ENV['DB'] || 'mysql'])
 
 load(File.dirname(__FILE__) + '/schema.rb')

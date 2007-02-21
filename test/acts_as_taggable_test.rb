@@ -55,7 +55,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equal [tags(:nature), tags(:good)], Post.tag_counts(:order => 'count desc', :limit => 2)
   end
   
-  def test_tag_counts_extension
+  def test_tag_counts_on_association
     assert_tag_counts users(:jonathan).posts.tag_counts, :good => 1, :nature => 3, :question => 1
     assert_tag_counts users(:sam).posts.tag_counts, :good => 1, :nature => 2, :bad => 1
     
@@ -63,7 +63,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_tag_counts users(:sam).photos.tag_counts, :nature => 2, :good => 1
   end
   
-  def test_tag_counts_extension_with_options
+  def test_tag_counts_on_association_with_options
     assert_equal [], users(:jonathan).posts.tag_counts(:conditions => '1=0')
     assert_tag_counts users(:jonathan).posts.tag_counts(:at_most => 2), :good => 1, :question => 1
   end

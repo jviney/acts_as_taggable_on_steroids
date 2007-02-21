@@ -4,3 +4,7 @@ mysql:
   :username: rails
   :password:
   :database: rails_plugin_test
+
+sqlite3:
+  :adapter: sqlite3
+  :database: ':memory:'
