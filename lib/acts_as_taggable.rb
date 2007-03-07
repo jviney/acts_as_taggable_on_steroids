@@ -66,7 +66,7 @@ module ActiveRecord
           at_least  = sanitize_sql(['count >= ?', options[:at_least]]) if options[:at_least]
           at_most   = sanitize_sql(['count <= ?', options[:at_most]]) if options[:at_most]
           having    = [at_least, at_most].compact.join(' and ')
-          group_by  = 'tags.id having count(*) > 0'
+          group_by  = 'tags.id, tags.name having count(*) > 0'
           group_by << " and #{having}" unless having.blank?
 
           Tag.find(:all,
