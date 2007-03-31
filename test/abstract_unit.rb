@@ -11,13 +11,10 @@ end
 require 'active_record/fixtures'
 
 require File.dirname(__FILE__) + '/../lib/acts_as_taggable'
-require File.dirname(__FILE__) + '/../lib/tag'
-require File.dirname(__FILE__) + '/../lib/tagging'
 
 ActiveRecord::Base.logger = Logger.new(File.dirname(__FILE__) + '/debug.log')
-config = YAML::load(IO.read(File.dirname(__FILE__) + '/database.yml'))
-ActiveRecord::Base.configurations = config
-ActiveRecord::Base.establish_connection(config[ENV['DB'] || 'mysql'])
+ActiveRecord::Base.configurations = YAML::load(IO.read(File.dirname(__FILE__) + '/database.yml'))
+ActiveRecord::Base.establish_connection(ENV['DB'] || 'mysql')
 
 load(File.dirname(__FILE__) + '/schema.rb')
 
@@ -25,18 +22,7 @@ Test::Unit::TestCase.fixture_path = File.dirname(__FILE__) + '/fixtures/'
 $LOAD_PATH.unshift(Test::Unit::TestCase.fixture_path)
 
 class Test::Unit::TestCase #:nodoc:
-  def create_fixtures(*table_names)
-    if block_given?
-      Fixtures.create_fixtures(Test::Unit::TestCase.fixture_path, table_names) { yield }
-    else
-      Fixtures.create_fixtures(Test::Unit::TestCase.fixture_path, table_names)
-    end
-  end
-
-  # Turn off transactional fixtures if you're working with MyISAM tables in MySQL
   self.use_transactional_fixtures = true
-  
-  # Instantiated fixtures are slow, but give you @david where you otherwise would need people(:david)
   self.use_instantiated_fixtures  = false
   
   def assert_equivalent(expected, actual, message = nil)

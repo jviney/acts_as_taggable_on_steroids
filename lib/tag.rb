@@ -1,6 +1,9 @@
 class Tag < ActiveRecord::Base
   has_many :taggings
   
+  cattr_accessor :delimiter
+  self.delimiter = ','
+  
   def self.parse(list)
     tags = []
     
@@ -8,10 +11,10 @@ class Tag < ActiveRecord::Base
     list = list.dup
     
     # Parse the quoted tags
-    list.gsub!(/"(.*?)"\s*,?\s*/) { tags << $1; "" }
+    list.gsub!(/"(.*?)"\s*#{delimiter}?\s*/) { tags << $1; "" }
     
     # Strip whitespace and remove blank tags
-    (tags + list.split(',')).map!(&:strip).delete_if(&:blank?)
+    (tags + list.split(delimiter)).map!(&:strip).delete_if(&:blank?)
   end
   
   # A list of all the objects tagged with this tag

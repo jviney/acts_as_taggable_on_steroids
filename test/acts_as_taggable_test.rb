@@ -151,4 +151,11 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert p.tag_list.blank?
     assert !p.reload.tag_list.blank?
   end
+  
+  def test_include_tags_on_find_tagged_with
+    assert_nothing_raised do
+      Photo.find_tagged_with('Nature', :include => :tags)
+      Photo.find_tagged_with("Nature", :include => { :taggings => :tag })
+    end
+  end
 end

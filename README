@@ -66,6 +66,14 @@ an single user's posts? To achieve this we call tag_counts on the association:
   
 Problems, comments, and suggestions all welcome. jonathan.viney@gmail.com
 
+=== Other
+
+If you want to change the delimiter used to parse tags, set Tag.delimiter.
+For example, to use spaces instead of commas, add the following to config/environment.rb:
+
+  Tag.delimiter = " "
+  
+  
 == Credits
 
 www.fanacious.com

@@ -27,8 +27,8 @@ class TagTest < Test::Unit::TestCase
   end
   
   def test_parse_single_tag
-    assert_equal %w{Fun}, Tag.parse("Fun")
-    assert_equal %w{Fun}, Tag.parse('"Fun"')
+    assert_equal %w(Fun), Tag.parse("Fun")
+    assert_equal %w(Fun), Tag.parse('"Fun"')
   end
   
   def test_parse_blank
@@ -45,11 +45,11 @@ class TagTest < Test::Unit::TestCase
   end
   
   def test_parse_multiple_tags
-    assert_equivalent %w{Alpha Beta Delta Gamma}, Tag.parse("Alpha, Beta, Gamma, Delta").sort
+    assert_equivalent %w(Alpha Beta Delta Gamma), Tag.parse("Alpha, Beta, Gamma, Delta").sort
   end
   
   def test_parse_multiple_tags_with_quotes
-    assert_equivalent %w{Alpha Beta Delta Gamma}, Tag.parse('Alpha,  "Beta",  Gamma , "Delta"').sort
+    assert_equivalent %w(Alpha Beta Delta Gamma), Tag.parse('Alpha,  "Beta",  Gamma , "Delta"').sort
   end
   
   def test_parse_multiple_tags_with_quote_and_commas
@@ -57,8 +57,17 @@ class TagTest < Test::Unit::TestCase
   end
   
   def test_parse_removes_white_space
-    assert_equivalent %w{Alpha Beta}, Tag.parse('" Alpha   ", "Beta  "')
-    assert_equivalent %w{Alpha Beta}, Tag.parse('  Alpha,  Beta ')
+    assert_equivalent %w(Alpha Beta), Tag.parse('" Alpha   ", "Beta  "')
+    assert_equivalent %w(Alpha Beta), Tag.parse('  Alpha,  Beta ')
+  end
+  
+  def test_alternative_delimiter
+    Tag.delimiter = " "
+    
+    assert_equal %w(One Two), Tag.parse("One Two")
+    assert_equal ['One two', 'three', 'four'], Tag.parse('"One two" three four')
+  ensure
+    Tag.delimiter = ","
   end
   
   def test_to_s
