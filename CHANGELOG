@@ -1,3 +1,7 @@
+[23 April 2007]
+
+* Make tag_list to respect Tag.delimiter
+
 [31 March 2007]
 
 * Add Tag.delimiter accessor to change how tags are parsed.

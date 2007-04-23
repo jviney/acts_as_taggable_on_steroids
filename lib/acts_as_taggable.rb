@@ -123,9 +123,9 @@ module ActiveRecord
         end
 
         def read_tags
-          tags.collect do |tag|
-            tag.name.include?(',') ? "\"#{tag.name}\"" : tag.name
-          end.join(', ')
+          tags.map do |tag|
+            tag.name.include?(Tag.delimiter) ? "\"#{tag.name}\"" : tag.name
+          end.join(Tag.delimiter.ends_with?(" ") ? Tag.delimiter : "#{Tag.delimiter} ")
         end
         
         def reload_with_tag_list(*args)

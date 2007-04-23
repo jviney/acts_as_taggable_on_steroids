@@ -122,6 +122,12 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert ["Question, Crazy animal", "Crazy animal, Question"].include?(photos(:jonathan_questioning_dog).tag_list)
   end
   
+  def test_read_tag_list_with_alternative_delimiter
+    Tag.delimiter = " "
+    
+    assert ['Question "Crazy animal"', '"Crazy animal" Question'].include?(photos(:jonathan_questioning_dog).tag_list)
+  end
+  
   def test_clear_tag_list_with_nil
     p = photos(:jonathan_questioning_dog)
     

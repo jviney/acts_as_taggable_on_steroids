@@ -66,8 +66,6 @@ class TagTest < Test::Unit::TestCase
     
     assert_equal %w(One Two), Tag.parse("One Two")
     assert_equal ['One two', 'three', 'four'], Tag.parse('"One two" three four')
-  ensure
-    Tag.delimiter = ","
   end
   
   def test_to_s
