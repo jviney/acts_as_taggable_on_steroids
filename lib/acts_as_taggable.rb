@@ -27,7 +27,7 @@ module ActiveRecord
         #   :exclude - Find models that are not tagged with the given tags
         #   :match_all - Find models that match all of the gievn tags, not just one
         #   :conditions - A piece of SQL conditions to add to the query
-        def find_tagged_with(tags, options = {})
+        def find_options_for_tagged_with(tags, options = {})
           tags = Tag.parse(tags) if tags.is_a?(String)
           return [] if tags.empty?
           tags.map!(&:to_s)
@@ -37,11 +37,16 @@ module ActiveRecord
           
           group = "#{table_name}_taggings.taggable_id HAVING COUNT(#{table_name}_taggings.taggable_id) = #{tags.size}" if options.delete(:match_all)
           
-          find(:all, { :select => "DISTINCT #{table_name}.*",
+          { :select => "DISTINCT #{table_name}.*",
             :joins => "LEFT OUTER JOIN taggings #{table_name}_taggings ON #{table_name}_taggings.taggable_id = #{table_name}.#{primary_key} AND #{table_name}_taggings.taggable_type = '#{name}' " +
                       "LEFT OUTER JOIN tags #{table_name}_tags ON #{table_name}_tags.id = #{table_name}_taggings.tag_id",
             :conditions => conditions,
-            :group      => group }.merge(options))
+            :group      => group
+          }.update(options)
+        end
+        
+        def find_tagged_with(*args)
+          find(:all, find_options_for_tagged_with(*args))
         end
         
         # Options:

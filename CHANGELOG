@@ -1,3 +1,7 @@
+[11 June 2007]
+
+* Restructure the creation of the options for find_tagged_with [Thijs Cadier]
+
 [23 April 2007]
 
 * Make tag_list to respect Tag.delimiter
