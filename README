@@ -21,6 +21,13 @@ Install
 
 == Usage
 
+=== Prepare database
+
+Generate and apply the migration:
+
+  ruby script/generate acts_as_taggable_migration
+  rake db:migrate
+
 === Basic tagging
 
 Using the examples from the tests, let's suppose we have users that have many posts and we want those

@@ -2,6 +2,8 @@
 
 * Restructure the creation of the options for find_tagged_with [Thijs Cadier]
 
+* Add an example migration with a generator.
+
 [23 April 2007]
 
 * Make tag_list to respect Tag.delimiter
