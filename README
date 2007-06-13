@@ -70,16 +70,41 @@ an single user's posts? To achieve this we call tag_counts on the association:
 
   User.find(:first).posts.tag_counts
   
-  
-Problems, comments, and suggestions all welcome. jonathan.viney@gmail.com
+=== Caching
 
-=== Other
+It is useful to cache the list of tags to reduce the number of queries executed. To do this,
+add a column named <tt>cached_tag_list</tt> to the model which is being tagged.
+
+  class CachePostTagList < ActiveRecord::Migration
+    def self.up
+      # You should make sure that the column is long enough to hold
+      # the full tag list. In some situations the :text type may be more appropriate.
+      add_column :posts, :cached_tag_list, :string
+    end
+  end
+
+  class Post < ActiveRecord::Base
+    acts_as_taggable
+    
+    # The caching column defaults to cached_tag_list, but can be changed:
+    # 
+    # set_cached_tag_list_column_name "my_caching_column_name"
+  end
+
+The details of the caching are handled for you. Just continue to use the tag_list accessor as you normally would.
+Note that the cached tag list will not be updated if you directly create Tagging objects or manually append to the
+<tt>tags</tt> or <tt>taggings</tt> associations. To update the cached tag list you should call <tt>save_cached_tag_list</tt> manually.
+
+=== Delimiter
 
 If you want to change the delimiter used to parse tags, set Tag.delimiter.
 For example, to use spaces instead of commas, add the following to config/environment.rb:
 
   Tag.delimiter = " "
-  
+
+=== Other
+
+Problems, comments, and suggestions all welcome. jonathan.viney@gmail.com  
   
 == Credits
 

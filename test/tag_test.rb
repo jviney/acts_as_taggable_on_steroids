@@ -68,6 +68,10 @@ class TagTest < Test::Unit::TestCase
     assert_equal ['One two', 'three', 'four'], Tag.parse('"One two" three four')
   end
   
+  def test_duplicate_tags_removed
+    assert_equal %w(One), Tag.parse("One, One")
+  end
+  
   def test_to_s
     assert_equal tags(:good).name, tags(:good).to_s
   end

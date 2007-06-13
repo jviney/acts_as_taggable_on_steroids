@@ -2,7 +2,7 @@ module ActiveRecord
   module Acts #:nodoc:
     module Taggable #:nodoc:
       def self.included(base)
-        base.extend(ClassMethods)  
+        base.extend(ClassMethods)
       end
       
       module ClassMethods
@@ -10,13 +10,22 @@ module ActiveRecord
           has_many :taggings, :as => :taggable, :dependent => :destroy, :include => :tag
           has_many :tags, :through => :taggings
           
-          after_save :save_tags
+          before_save :save_cached_tag_list
+          after_save :save_tag_list
           
           include ActiveRecord::Acts::Taggable::InstanceMethods
           extend ActiveRecord::Acts::Taggable::SingletonMethods
           
           alias_method :reload_without_tag_list, :reload
           alias_method :reload, :reload_with_tag_list
+        end
+        
+        def cached_tag_list_column_name
+          "cached_tag_list"
+        end
+        
+        def set_cached_tag_list_column_name(value = nil, &block)
+          define_attr_method :cached_tag_list_column_name, value, &block
         end
       end
       
@@ -94,18 +103,30 @@ module ActiveRecord
         attr_writer :tag_list
         
         def tag_list
-          defined?(@tag_list) ? @tag_list : read_tags
+          if instance_variable_defined?("@tag_list")
+            @tag_list
+          elsif self.class.column_names.include?(self.class.cached_tag_list_column_name) and !send(self.class.cached_tag_list_column_name).nil?
+            send(self.class.cached_tag_list_column_name)
+          else
+            read_tags
+          end
         end
         
-        def save_tags
-          if defined?(@tag_list)
+        def save_tag_list
+          if instance_variable_defined?("@tag_list")
             write_tags(@tag_list)
             remove_tag_list
           end
         end
         
+        def save_cached_tag_list
+          if self.class.column_names.include?(self.class.cached_tag_list_column_name)
+            self[self.class.cached_tag_list_column_name] = format_tag_names(Tag.parse(tag_list))
+          end
+        end
+        
         def write_tags(list)
-          new_tag_names = Tag.parse(list).uniq
+          new_tag_names = Tag.parse(list)
           old_tagging_ids = []
           
           Tag.transaction do
@@ -128,8 +149,12 @@ module ActiveRecord
         end
 
         def read_tags
-          tags.map do |tag|
-            tag.name.include?(Tag.delimiter) ? "\"#{tag.name}\"" : tag.name
+          format_tag_names(tags.map(&:name))
+        end
+        
+        def format_tag_names(tag_names)
+          tag_names.map do |tag_name|
+            tag_name.include?(Tag.delimiter) ? "\"#{tag_name}\"" : tag_name
           end.join(Tag.delimiter.ends_with?(" ") ? Tag.delimiter : "#{Tag.delimiter} ")
         end
         
@@ -140,7 +165,7 @@ module ActiveRecord
         
        private
         def remove_tag_list
-          remove_instance_variable(:@tag_list) if defined?(@tag_list)
+          remove_instance_variable("@tag_list") if instance_variable_defined?("@tag_list")
         end
       end
     end

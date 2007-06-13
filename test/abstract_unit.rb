@@ -26,6 +26,8 @@ ActiveRecord::Base.establish_connection(ENV['DB'] || 'mysql')
 
 load(File.dirname(__FILE__) + '/schema.rb')
 
+Test::Unit::TestCase.fixture_path = fixture_path
+
 class Test::Unit::TestCase #:nodoc:
   self.use_transactional_fixtures = true
   self.use_instantiated_fixtures  = false
@@ -59,4 +61,25 @@ class Test::Unit::TestCase #:nodoc:
       assert false, "The following tag counts were not present: #{expected_values.inspect}"
     end
   end
+  
+  def assert_queries(num = 1)
+    $query_count = 0
+    yield
+  ensure
+    assert_equal num, $query_count, "#{$query_count} instead of #{num} queries were executed."
+  end
+
+  def assert_no_queries(&block)
+    assert_queries(0, &block)
+  end
+end
+
+ActiveRecord::Base.connection.class.class_eval do  
+  def execute_with_counting(sql, name = nil, &block)
+    $query_count ||= 0
+    $query_count += 1
+    execute_without_counting(sql, name, &block)
+  end
+  
+  alias_method_chain :execute, :counting
 end

@@ -164,4 +164,39 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
       Photo.find_tagged_with("Nature", :include => { :taggings => :tag })
     end
   end
+  
+  def test_tag_list_populated_when_cache_nil
+    assert_nil posts(:jonathan_sky).cached_tag_list
+    posts(:jonathan_sky).save!
+    assert_equal posts(:jonathan_sky).tag_list, posts(:jonathan_sky).cached_tag_list
+  end
+  
+  def test_cached_tag_list_used
+    posts(:jonathan_sky).save!
+    posts(:jonathan_sky).reload
+    
+    assert_no_queries do
+      assert_equivalent Tag.parse('"Very good", Nature'), Tag.parse(posts(:jonathan_sky).tag_list)
+    end
+  end
+  
+  def test_cached_tag_list_not_used
+    # Load column information and fixture
+    posts(:jonathan_sky)
+    
+    assert_queries 1 do
+      # Tags association will be loaded
+      posts(:jonathan_sky).tag_list
+    end
+  end
+  
+  def test_cached_tag_list_updated
+    assert_nil posts(:jonathan_sky).cached_tag_list
+    posts(:jonathan_sky).save!
+    assert_equivalent Tag.parse('"Very good", Nature'), Tag.parse(posts(:jonathan_sky).cached_tag_list)
+    posts(:jonathan_sky).update_attributes!(:tag_list => "None")
+    
+    assert_equal 'None', posts(:jonathan_sky).cached_tag_list
+    assert_equal 'None', posts(:jonathan_sky).reload.cached_tag_list
+  end
 end

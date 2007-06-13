@@ -13,8 +13,15 @@ class Tag < ActiveRecord::Base
     # Parse the quoted tags
     list.gsub!(/"(.*?)"\s*#{delimiter}?\s*/) { tags << $1; "" }
     
-    # Strip whitespace and remove blank tags
-    (tags + list.split(delimiter)).map!(&:strip).delete_if(&:blank?)
+    # Strip whitespace and remove blank or duplicate tags
+    returning [] do |result|
+      result.concat(tags)
+      result.concat(list.split(delimiter))
+      
+      result.map!(&:strip)
+      result.reject!(&:blank?)
+      result.uniq!
+    end
   end
   
   # A list of all the objects tagged with this tag
