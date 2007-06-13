@@ -4,6 +4,10 @@
 
 * Add an example migration with a generator.
 
+* Add caching.
+
+* Fix compatibility with Ruby < 1.8.6
+
 [23 April 2007]
 
 * Make tag_list to respect Tag.delimiter

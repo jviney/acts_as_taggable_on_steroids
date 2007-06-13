@@ -103,7 +103,7 @@ module ActiveRecord
         attr_writer :tag_list
         
         def tag_list
-          if instance_variable_defined?("@tag_list")
+          if defined?(@tag_list)
             @tag_list
           elsif self.class.column_names.include?(self.class.cached_tag_list_column_name) and !send(self.class.cached_tag_list_column_name).nil?
             send(self.class.cached_tag_list_column_name)
@@ -113,7 +113,7 @@ module ActiveRecord
         end
         
         def save_tag_list
-          if instance_variable_defined?("@tag_list")
+          if defined?("@tag_list")
             write_tags(@tag_list)
             remove_tag_list
           end
@@ -165,7 +165,7 @@ module ActiveRecord
         
        private
         def remove_tag_list
-          remove_instance_variable("@tag_list") if instance_variable_defined?("@tag_list")
+          remove_instance_variable("@tag_list") if defined?(@tag_list)
         end
       end
     end
