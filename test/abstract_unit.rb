@@ -6,6 +6,7 @@ begin
 rescue LoadError
   require 'rubygems'
   require_gem 'activerecord'
+  require_gem 'actionpack'
 end
 
 # Search for fixtures first
@@ -19,6 +20,9 @@ end
 require 'active_record/fixtures'
 
 require File.dirname(__FILE__) + '/../lib/acts_as_taggable'
+require File.dirname(__FILE__) + '/../lib/tagging'
+require File.dirname(__FILE__) + '/../lib/tag_list'
+require File.dirname(__FILE__) + '/../lib/tag'
 
 ActiveRecord::Base.logger = Logger.new(File.dirname(__FILE__) + '/debug.log')
 ActiveRecord::Base.configurations = YAML::load(IO.read(File.dirname(__FILE__) + '/database.yml'))
@@ -31,10 +35,6 @@ Test::Unit::TestCase.fixture_path = fixture_path
 class Test::Unit::TestCase #:nodoc:
   self.use_transactional_fixtures = true
   self.use_instantiated_fixtures  = false
-  
-  def setup
-    Tag.delimiter = ","
-  end
   
   def assert_equivalent(expected, actual, message = nil)
     if expected.first.is_a?(ActiveRecord::Base)

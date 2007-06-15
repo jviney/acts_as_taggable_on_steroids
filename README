@@ -45,10 +45,15 @@ We can now use the tagging methods provided by acts_as_taggable, <tt>tag_list</t
 methods work like regular attribute accessors.
 
   p = Post.find(:first)
-  p.tag_list # ""
+  p.tag_list.to_s # ""
   p.tag_list = "Funny, Silly"
   p.save
-  p.reload.tag_list # "Funny, Silly"
+  p.reload.tag_list.to_s # "Funny, Silly"
+  
+You can also add or remove arrays of tags.
+
+  p.tag_list.add("Great", "Awful")
+  p.tag_list.remove("Funny")
 
 === Finding tagged objects
 
@@ -97,10 +102,10 @@ Note that the cached tag list will not be updated if you directly create Tagging
 
 === Delimiter
 
-If you want to change the delimiter used to parse tags, set Tag.delimiter.
+If you want to change the delimiter used to parse and present tags, set TagList.delimiter.
 For example, to use spaces instead of commas, add the following to config/environment.rb:
 
-  Tag.delimiter = " "
+  TagList.delimiter = " "
 
 === Other
 

@@ -11,7 +11,7 @@ module ActiveRecord
           has_many :tags, :through => :taggings
           
           before_save :save_cached_tag_list
-          after_save :save_tag_list
+          after_save :save_tags
           
           include ActiveRecord::Acts::Taggable::InstanceMethods
           extend ActiveRecord::Acts::Taggable::SingletonMethods
@@ -37,7 +37,7 @@ module ActiveRecord
         #   :match_all - Find models that match all of the gievn tags, not just one
         #   :conditions - A piece of SQL conditions to add to the query
         def find_options_for_tagged_with(tags, options = {})
-          tags = Tag.parse(tags) if tags.is_a?(String)
+          tags = TagList.from(tags).names if tags.is_a?(String)
           return [] if tags.empty?
           tags.map!(&:to_s)
           
@@ -100,72 +100,49 @@ module ActiveRecord
       end
       
       module InstanceMethods
-        attr_writer :tag_list
-        
         def tag_list
-          if defined?(@tag_list)
+          if @tag_list
             @tag_list
-          elsif self.class.column_names.include?(self.class.cached_tag_list_column_name) and !send(self.class.cached_tag_list_column_name).nil?
-            send(self.class.cached_tag_list_column_name)
+          elsif caching_tag_list? and !send(self.class.cached_tag_list_column_name).nil?
+            @tag_list = TagList.from(send(self.class.cached_tag_list_column_name))
           else
-            read_tags
+            @tag_list = TagList.new(tags.map(&:name))
           end
         end
         
-        def save_tag_list
-          if defined?("@tag_list")
-            write_tags(@tag_list)
-            remove_tag_list
-          end
+        def tag_list=(value)
+          @tag_list = TagList.from(value)
         end
         
         def save_cached_tag_list
-          if self.class.column_names.include?(self.class.cached_tag_list_column_name)
-            self[self.class.cached_tag_list_column_name] = format_tag_names(Tag.parse(tag_list))
+          if caching_tag_list? and !tag_list.blank?
+            self[self.class.cached_tag_list_column_name] = tag_list.to_s
           end
         end
         
-        def write_tags(list)
-          new_tag_names = Tag.parse(list)
-          old_tagging_ids = []
+        def save_tags
+          return unless @tag_list
           
-          Tag.transaction do
-            taggings.each do |tagging|
-              index = new_tag_names.index(tagging.tag.name)
-              index ? new_tag_names.delete_at(index) : old_tagging_ids << tagging.id
+          new_tag_names = @tag_list.names - tags.map(&:name)
+          old_tags = tags.reject { |tag| @tag_list.names.include?(tag.name) }
+          
+          self.class.transaction do
+            new_tag_names.each do |new_tag_name|
+              tags << Tag.find_or_create_by_name(new_tag_name)
             end
             
-            Tagging.delete_all(['id in (?)', old_tagging_ids]) if old_tagging_ids.any?
-            
-            # Create any new tags/taggings
-            new_tag_names.each do |name|
-              Tag.find_or_create_by_name(name).tag(self)
-            end
-            
-            taggings.reset
-            tags.reset
+            tags.delete(*old_tags) if old_tags.any?
           end
           true
         end
 
-        def read_tags
-          format_tag_names(tags.map(&:name))
-        end
-        
-        def format_tag_names(tag_names)
-          tag_names.map do |tag_name|
-            tag_name.include?(Tag.delimiter) ? "\"#{tag_name}\"" : tag_name
-          end.join(Tag.delimiter.ends_with?(" ") ? Tag.delimiter : "#{Tag.delimiter} ")
-        end
-        
         def reload_with_tag_list(*args)
-          remove_tag_list
+          @tag_list = nil
           reload_without_tag_list(*args)
         end
         
-       private
-        def remove_tag_list
-          remove_instance_variable("@tag_list") if defined?(@tag_list)
+        def caching_tag_list?
+          self.class.column_names.include?(self.class.cached_tag_list_column_name)
         end
       end
     end

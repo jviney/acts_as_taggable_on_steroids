@@ -1,3 +1,11 @@
+[15 June 2007]
+
+* Introduce TagList class.
+
+* Various cleanups and improvements.
+
+* Use TagList.delimiter now, not Tag.delimiter. Tag.delimiter will be removed at some stage.
+
 [11 June 2007]
 
 * Restructure the creation of the options for find_tagged_with [Thijs Cadier]
