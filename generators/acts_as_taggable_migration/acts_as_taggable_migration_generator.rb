@@ -6,6 +6,6 @@ class ActsAsTaggableMigrationGenerator < Rails::Generator::Base
   end
   
   def file_name
-    "acts_as_taggable_migration.rb"
+    "acts_as_taggable_migration"
   end
 end

@@ -1,3 +1,7 @@
+[21 June 2007]
+
+* Remove extra .rb from generated migration file name.
+
 [15 June 2007]
 
 * Introduce TagList class.
