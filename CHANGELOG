@@ -6,6 +6,8 @@
 
 * find_tagged_with passing in no tags should return an empty array.
 
+* Improve compatibility with PostgreSQL.
+
 [21 June 2007]
 
 * Remove extra .rb from generated migration file name.

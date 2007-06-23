@@ -77,7 +77,7 @@ module ActiveRecord
           end_at = sanitize_sql(['taggings.created_at <= ?', options[:end_at]]) if options[:end_at]
           
           conditions = [
-            "taggings.taggable_type = '#{name}'",
+            "taggings.taggable_type = #{quote_value(name)}",
             options[:conditions],
             scope && scope[:conditions],
             start_at,
@@ -85,11 +85,11 @@ module ActiveRecord
           ]
           conditions = conditions.compact.join(' and ')
           
-          at_least  = sanitize_sql(['count >= ?', options[:at_least]]) if options[:at_least]
-          at_most   = sanitize_sql(['count <= ?', options[:at_most]]) if options[:at_most]
+          at_least  = sanitize_sql(['COUNT(*) >= ?', options[:at_least]]) if options[:at_least]
+          at_most   = sanitize_sql(['COUNT(*) <= ?', options[:at_most]]) if options[:at_most]
           having    = [at_least, at_most].compact.join(' and ')
-          group_by  = 'tags.id, tags.name having count(*) > 0'
-          group_by << " and #{having}" unless having.blank?
+          group_by  = 'tags.id, tags.name HAVING COUNT(*) > 0'
+          group_by << " AND #{having}" unless having.blank?
 
           Tag.find(:all,
             :select     => 'tags.id, tags.name, COUNT(*) AS count', 
