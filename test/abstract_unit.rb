@@ -20,9 +20,7 @@ end
 require 'active_record/fixtures'
 
 require File.dirname(__FILE__) + '/../lib/acts_as_taggable'
-require File.dirname(__FILE__) + '/../lib/tagging'
 require File.dirname(__FILE__) + '/../lib/tag_list'
-require File.dirname(__FILE__) + '/../lib/tag'
 
 ActiveRecord::Base.logger = Logger.new(File.dirname(__FILE__) + '/debug.log')
 ActiveRecord::Base.configurations = YAML::load(IO.read(File.dirname(__FILE__) + '/database.yml'))

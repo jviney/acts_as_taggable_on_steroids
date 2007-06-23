@@ -3,6 +3,19 @@ require File.dirname(__FILE__) + '/abstract_unit'
 class TagTest < Test::Unit::TestCase
   fixtures :tags, :taggings, :users, :photos, :posts
   
+  def test_name_required
+    t = Tag.create
+    assert_match /blank/, t.errors[:name]
+  end
+  
+  def test_name_unique
+    t = Tag.create!(:name => "My tag")
+    duplicate = t.clone
+    
+    assert !duplicate.save
+    assert_match /taken/, duplicate.errors[:name]
+  end
+  
   def test_taggings
     assert_equal [taggings(:jonathan_sky_good), taggings(:sam_flowers_good), taggings(:sam_flower_good)], tags(:good).taggings
     assert_equal [taggings(:sam_ground_bad), taggings(:jonathan_bad_cat_bad)], tags(:bad).taggings

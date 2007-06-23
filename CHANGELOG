@@ -1,3 +1,7 @@
+[23 June 2007]
+
+* Add validation to Tag model.
+
 [21 June 2007]
 
 * Remove extra .rb from generated migration file name.
