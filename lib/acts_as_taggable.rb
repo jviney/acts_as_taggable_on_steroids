@@ -38,8 +38,10 @@ module ActiveRecord
         #   :conditions - A piece of SQL conditions to add to the query
         def find_options_for_tagged_with(tags, options = {})
           tags = TagList.from(tags).names if tags.is_a?(String)
-          return [] if tags.empty?
+          tags.compact!
           tags.map!(&:to_s)
+          
+          return {} if tags.empty?
           
           conditions = sanitize_sql(["#{table_name}_tags.name #{"NOT" if options.delete(:exclude)} IN (?)", tags])
           conditions << " AND #{sanitize_sql(options.delete(:conditions))}" if options[:conditions]
@@ -55,7 +57,8 @@ module ActiveRecord
         end
         
         def find_tagged_with(*args)
-          find(:all, find_options_for_tagged_with(*args))
+          options = find_options_for_tagged_with(*args)
+          options.blank? ? [] : find(:all, options)
         end
         
         # Options:

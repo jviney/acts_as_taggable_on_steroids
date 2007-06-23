@@ -2,6 +2,10 @@
 
 * Add validation to Tag model.
 
+* find_options_for_tagged_with should always return a hash.
+
+* find_tagged_with passing in no tags should return an empty array.
+
 [21 June 2007]
 
 * Remove extra .rb from generated migration file name.

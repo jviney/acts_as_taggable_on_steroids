@@ -17,6 +17,11 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equal Photo.find_tagged_with('"Crazy animal" Bad'), Photo.find_tagged_with([tags(:animal), tags(:bad)])
   end
   
+  def test_find_tagged_with_nothing
+    assert_equal [], Post.find_tagged_with("")
+    assert_equal [], Post.find_tagged_with([])
+  end
+  
   def test_find_tagged_with_nonexistant_tags
     assert_equal [], Post.find_tagged_with('ABCDEFG')
     assert_equal [], Photo.find_tagged_with(['HIJKLM'])
@@ -26,6 +31,11 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   def test_find_tagged_with_matching_all_tags
     assert_equivalent [photos(:jonathan_dog)], Photo.find_tagged_with('Crazy animal, "Nature"', :match_all => true)
     assert_equivalent [posts(:jonathan_sky), posts(:sam_flowers)], Post.find_tagged_with(['Very good', 'Nature'], :match_all => true)
+  end
+  
+  def test_find_options_for_tagged_with_no_tags_returns_empty_hash
+    assert_equal Hash.new, Post.find_options_for_tagged_with("")
+    assert_equal Hash.new, Post.find_options_for_tagged_with([nil])
   end
   
   def test_include_tags_on_find_tagged_with
