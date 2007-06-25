@@ -5,7 +5,7 @@ class TagTest < Test::Unit::TestCase
   
   def test_name_required
     t = Tag.create
-    assert_match /blank/, t.errors[:name]
+    assert_match /blank/, t.errors[:name].to_s
   end
   
   def test_name_unique
@@ -13,7 +13,7 @@ class TagTest < Test::Unit::TestCase
     duplicate = t.clone
     
     assert !duplicate.save
-    assert_match /taken/, duplicate.errors[:name]
+    assert_match /taken/, duplicate.errors[:name].to_s
   end
   
   def test_taggings

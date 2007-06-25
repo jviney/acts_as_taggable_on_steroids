@@ -190,7 +190,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   def test_cached_tag_list_updated
     assert_nil posts(:jonathan_sky).cached_tag_list
     posts(:jonathan_sky).save!
-    assert_equivalent TagList.from('"Very good", Nature'), TagList.from(posts(:jonathan_sky).cached_tag_list)
+    assert_equivalent ["Very good", "Nature"], TagList.from(posts(:jonathan_sky).cached_tag_list).names
     posts(:jonathan_sky).update_attributes!(:tag_list => "None")
     
     assert_equal 'None', posts(:jonathan_sky).cached_tag_list
