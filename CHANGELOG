@@ -1,3 +1,9 @@
+[1 July 2007]
+
+* Fix incorrect tagging when the case of the tag list is changed.
+
+* Fix deprecated Tag.delimiter accessor.
+
 [23 June 2007]
 
 * Add validation to Tag model.

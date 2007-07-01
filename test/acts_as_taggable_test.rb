@@ -114,6 +114,15 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equivalent ["Nature"], posts(:jonathan_sky).tag_list.names
   end
   
+  def test_change_case_of_tags
+    original_tag_names = photos(:jonathan_questioning_dog).tag_list.names
+    photos(:jonathan_questioning_dog).update_attributes!(:tag_list => photos(:jonathan_questioning_dog).tag_list.to_s.upcase)
+    
+    # The new tag list is not uppercase becuase the AR finders are not case-sensitive
+    # and find the old tags when re-tagging with the uppercase tags.
+    assert_equivalent original_tag_names, photos(:jonathan_questioning_dog).reload.tag_list.names
+  end
+  
   def test_remove_and_add_tag
     assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list.names
     posts(:jonathan_sky).update_attributes!(:tag_list => "Nature, Beautiful")

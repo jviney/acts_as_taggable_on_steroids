@@ -130,11 +130,11 @@ module ActiveRecord
           old_tags = tags.reject { |tag| @tag_list.names.include?(tag.name) }
           
           self.class.transaction do
+            tags.delete(*old_tags) if old_tags.any?
+            
             new_tag_names.each do |new_tag_name|
               tags << Tag.find_or_create_by_name(new_tag_name)
             end
-            
-            tags.delete(*old_tags) if old_tags.any?
           end
           true
         end

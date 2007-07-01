@@ -5,7 +5,7 @@ class Tag < ActiveRecord::Base
   validates_uniqueness_of :name
   
   class << self
-    delegate :delimiter, :delimeter=, :to => TagList
+    delegate :delimiter, :delimiter=, :to => TagList
   end
   
   def ==(object)
