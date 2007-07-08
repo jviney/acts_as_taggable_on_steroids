@@ -37,7 +37,12 @@ module ActiveRecord
         #   :match_all - Find models that match all of the gievn tags, not just one
         #   :conditions - A piece of SQL conditions to add to the query
         def find_options_for_tagged_with(tags, options = {})
-          tags = TagList.from(tags).names if tags.is_a?(String)
+	  tags = if tags.is_a?(String)
+	    TagList.from(tags).names
+	  else
+	    tags.dup
+	  end
+	  
           tags.compact!
           tags.map!(&:to_s)
           
