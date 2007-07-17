@@ -1,3 +1,7 @@
+[17 July 2007]
+
+* Make the migration work on edge rails
+
 [8 July 2007]
 
 * find_options_for_tagged_with should not alter its arguments
