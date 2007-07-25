@@ -116,7 +116,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     Tagging.table_name = "categorisations"
     Tag.table_name = "categories"
     
-    options = Photo.options_for_tag_counts(:start_at => 2.weeks.ago, :end_at => Date.today)
+    options = Photo.find_options_for_tag_counts(:start_at => 2.weeks.ago, :end_at => Date.today)
     sql = options.values.join(' ')
     
     assert_no_match /taggings/, sql

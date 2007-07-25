@@ -82,10 +82,10 @@ module ActiveRecord
         #  :at_least - Exclude tags with a frequency less than the given value
         #  :at_most - Exclude tags with a frequency greater then the given value
         def tag_counts(*args)
-          Tag.find(:all, options_for_tag_counts(*args))
+          Tag.find(:all, find_options_for_tag_counts(*args))
         end
         
-        def options_for_tag_counts(options = {})
+        def find_options_for_tag_counts(options = {})
           options.assert_valid_keys :start_at, :end_at, :conditions, :at_least, :at_most, :order, :limit
 
           scope = scope(:find)
