@@ -33,6 +33,11 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equivalent [posts(:jonathan_sky), posts(:sam_flowers)], Post.find_tagged_with(['Very good', 'Nature'], :match_all => true)
   end
   
+  def test_find_tagged_with_exclusions
+    assert_equivalent [photos(:jonathan_questioning_dog), photos(:jonathan_bad_cat)], Photo.find_tagged_with("Nature", :exclude => true)
+    assert_equivalent [posts(:jonathan_grass), posts(:jonathan_rain)], Post.find_tagged_with("'Very good', Bad", :exclude => true)
+  end
+  
   def test_find_options_for_tagged_with_no_tags_returns_empty_hash
     assert_equal Hash.new, Post.find_options_for_tagged_with("")
     assert_equal Hash.new, Post.find_options_for_tagged_with([nil])
@@ -42,6 +47,22 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     original_tags = photos(:jonathan_questioning_dog).tags.dup
     Photo.find_options_for_tagged_with(photos(:jonathan_questioning_dog).tags)
     assert_equal original_tags, photos(:jonathan_questioning_dog).tags
+  end
+  
+  def test_find_options_for_tagged_with_respects_custom_table_name
+    Tagging.table_name = "categorisations"
+    Tag.table_name = "categories"
+    
+    options = Photo.find_options_for_tagged_with("Hello")
+    
+    assert_no_match Regexp.new(" taggings "), options[:joins]
+    assert_no_match Regexp.new(" tags "), options[:joins]
+    
+    assert_match Regexp.new(" categorisations "), options[:joins]
+    assert_match Regexp.new(" categories "), options[:joins]
+  ensure
+    Tagging.table_name = "taggings"
+    Tag.table_name = "tags"
   end
   
   def test_include_tags_on_find_tagged_with
@@ -89,6 +110,23 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   def test_tag_counts_on_association_with_options
     assert_equal [], users(:jonathan).posts.tag_counts(:conditions => '1=0')
     assert_tag_counts users(:jonathan).posts.tag_counts(:at_most => 2), :good => 1, :question => 1
+  end
+  
+  def test_tag_counts_respects_custom_table_names
+    Tagging.table_name = "categorisations"
+    Tag.table_name = "categories"
+    
+    options = Photo.options_for_tag_counts(:start_at => 2.weeks.ago, :end_at => Date.today)
+    sql = options.values.join(' ')
+    
+    assert_no_match /taggings/, sql
+    assert_no_match /tags/, sql
+    
+    assert_match /categorisations/, sql
+    assert_match /categories/, sql
+  ensure
+    Tagging.table_name = "taggings"
+    Tag.table_name = "tags"
   end
   
   def test_tag_list_reader

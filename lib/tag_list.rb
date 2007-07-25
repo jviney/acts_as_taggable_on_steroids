@@ -47,8 +47,10 @@ class TagList
     def parse(string)
       returning [] do |names|
         string = string.to_s.dup
+        
         # Parse the quoted tags
         string.gsub!(/"(.*?)"\s*#{delimiter}?\s*/) { names << $1; "" }
+        string.gsub!(/'(.*?)'\s*#{delimiter}?\s*/) { names << $1; "" }
         
         names.concat(string.split(delimiter))
       end

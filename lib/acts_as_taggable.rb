@@ -34,7 +34,7 @@ module ActiveRecord
         # 
         # Options:
         #   :exclude - Find models that are not tagged with the given tags
-        #   :match_all - Find models that match all of the gievn tags, not just one
+        #   :match_all - Find models that match all of the given tags, not just one
         #   :conditions - A piece of SQL conditions to add to the query
         def find_options_for_tagged_with(tags, options = {})
           tags = if tags.is_a?(String)
@@ -48,15 +48,22 @@ module ActiveRecord
           
           return {} if tags.empty?
           
-          conditions = sanitize_sql(["#{table_name}_tags.name #{"NOT" if options.delete(:exclude)} IN (?)", tags])
-          conditions << " AND #{sanitize_sql(options.delete(:conditions))}" if options[:conditions]
+          conditions = ["1=1"]
+          conditions << sanitize_sql(options.delete(:conditions)) if options[:conditions]
           
-          group = "#{table_name}_taggings.taggable_id HAVING COUNT(#{table_name}_taggings.taggable_id) = #{tags.size}" if options.delete(:match_all)
+          taggings_alias, tags_alias = "#{table_name}_taggings", "#{table_name}_tags"
+          
+          if options.delete(:exclude)
+            conditions << sanitize_sql(["#{table_name}.id NOT IN (SELECT #{Tagging.table_name}.taggable_id FROM #{Tagging.table_name} LEFT OUTER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id WHERE #{Tag.table_name}.name IN (?) AND #{Tagging.table_name}.taggable_type = '#{name}')", tags])
+          else
+            conditions << sanitize_sql(["#{table_name}_tags.name IN (?)", tags])
+            group = "#{taggings_alias}.taggable_id HAVING COUNT(#{taggings_alias}.taggable_id) = #{tags.size}" if options.delete(:match_all)
+          end
           
           { :select => "DISTINCT #{table_name}.*",
-            :joins => "LEFT OUTER JOIN taggings #{table_name}_taggings ON #{table_name}_taggings.taggable_id = #{table_name}.#{primary_key} AND #{table_name}_taggings.taggable_type = '#{name}' " +
-                      "LEFT OUTER JOIN tags #{table_name}_tags ON #{table_name}_tags.id = #{table_name}_taggings.tag_id",
-            :conditions => conditions,
+            :joins => "LEFT OUTER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = '#{name}' " +
+                      "LEFT OUTER JOIN #{Tag.table_name} #{tags_alias} ON #{tags_alias}.id = #{taggings_alias}.tag_id",
+            :conditions => conditions.join(" AND "),
             :group      => group
           }.update(options)
         end
@@ -74,15 +81,19 @@ module ActiveRecord
         #  :order - A piece of SQL to order by. Eg 'tags.count desc' or 'taggings.created_at desc'
         #  :at_least - Exclude tags with a frequency less than the given value
         #  :at_most - Exclude tags with a frequency greater then the given value
-        def tag_counts(options = {})
+        def tag_counts(*args)
+          Tag.find(:all, options_for_tag_counts(*args))
+        end
+        
+        def options_for_tag_counts(options = {})
           options.assert_valid_keys :start_at, :end_at, :conditions, :at_least, :at_most, :order, :limit
 
           scope = scope(:find)
-          start_at = sanitize_sql(['taggings.created_at >= ?', options[:start_at]]) if options[:start_at]
-          end_at = sanitize_sql(['taggings.created_at <= ?', options[:end_at]]) if options[:end_at]
+          start_at = sanitize_sql(["#{Tagging.table_name}.created_at >= ?", options[:start_at]]) if options[:start_at]
+          end_at = sanitize_sql(["#{Tagging.table_name}.created_at <= ?", options[:end_at]]) if options[:end_at]
           
           conditions = [
-            "taggings.taggable_type = #{quote_value(name)}",
+            "#{Tagging.table_name}.taggable_type = #{quote_value(name)}",
             options[:conditions],
             scope && scope[:conditions],
             start_at,
@@ -93,17 +104,16 @@ module ActiveRecord
           at_least  = sanitize_sql(['COUNT(*) >= ?', options[:at_least]]) if options[:at_least]
           at_most   = sanitize_sql(['COUNT(*) <= ?', options[:at_most]]) if options[:at_most]
           having    = [at_least, at_most].compact.join(' and ')
-          group_by  = 'tags.id, tags.name HAVING COUNT(*) > 0'
+          group_by  = "#{Tag.table_name}.id, #{Tag.table_name}.name HAVING COUNT(*) > 0"
           group_by << " AND #{having}" unless having.blank?
-
-          Tag.find(:all,
-            :select     => 'tags.id, tags.name, COUNT(*) AS count', 
-            :joins      => "LEFT OUTER JOIN taggings ON tags.id = taggings.tag_id LEFT OUTER JOIN #{table_name} ON #{table_name}.#{primary_key} = taggings.taggable_id",
+          
+          { :select     => "#{Tag.table_name}.id, #{Tag.table_name}.name, COUNT(*) AS count", 
+            :joins      => "LEFT OUTER JOIN #{Tagging.table_name} ON #{Tag.table_name}.id = #{Tagging.table_name}.tag_id LEFT OUTER JOIN #{table_name} ON #{table_name}.#{primary_key} = #{Tagging.table_name}.taggable_id",
             :conditions => conditions,
             :group      => group_by,
             :order      => options[:order],
             :limit      => options[:limit]
-          )
+          }
         end
       end
       

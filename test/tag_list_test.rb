@@ -46,6 +46,10 @@ class TagListTest < Test::Unit::TestCase
     assert_equivalent %w(Alpha Beta Delta Gamma), TagList.from('Alpha,  "Beta",  Gamma , "Delta"').names.sort
   end
   
+  def test_from_with_single_quotes
+    assert_equivalent ['A B', 'C'], TagList.from("'A B', C").names.sort
+  end
+  
   def test_from_multiple_tags_with_quote_and_commas
     assert_equivalent ['Alpha, Beta', 'Delta', 'Gamma, something'], TagList.from('"Alpha, Beta", Delta, "Gamma, something"').names
   end
@@ -68,7 +72,7 @@ class TagListTest < Test::Unit::TestCase
     assert_equal %w(One), TagList.from("One, One").names
   end
   
-    def test_to_s_with_commas
+  def test_to_s_with_commas
     assert_equal "Question, Crazy Animal", TagList.new(["Question", "Crazy Animal"]).to_s
   end
   

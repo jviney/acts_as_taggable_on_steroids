@@ -1,3 +1,9 @@
+[25 July 2007]
+
+* Respect custom table names for the Tag and Tagging classes.
+
+* Fix the :exclude option for find_tagged_with
+
 [17 July 2007]
 
 * Make the migration work on edge rails
