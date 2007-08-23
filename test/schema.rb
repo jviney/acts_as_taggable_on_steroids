@@ -18,6 +18,7 @@ ActiveRecord::Schema.define :version => 0 do
     t.column :text, :text
     t.column :cached_tag_list, :string
     t.column :user_id, :integer
+    t.column :type, :string
   end
   
   create_table :photos, :force => true do |t|

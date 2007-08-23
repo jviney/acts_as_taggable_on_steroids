@@ -1,3 +1,9 @@
+[23 August 2007]
+
+* Make search comparisons case-insensitive across different databases. [Moisés Machado]
+
+* Improve compatiblity with STI. [Moisés Machado]
+
 [25 July 2007]
 
 * Respect custom table names for the Tag and Tagging classes.

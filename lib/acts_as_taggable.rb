@@ -48,20 +48,24 @@ module ActiveRecord
           
           return {} if tags.empty?
           
-          conditions = ["1=1"]
+          conditions = []
           conditions << sanitize_sql(options.delete(:conditions)) if options[:conditions]
           
           taggings_alias, tags_alias = "#{table_name}_taggings", "#{table_name}_tags"
           
           if options.delete(:exclude)
-            conditions << sanitize_sql(["#{table_name}.id NOT IN (SELECT #{Tagging.table_name}.taggable_id FROM #{Tagging.table_name} LEFT OUTER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id WHERE #{Tag.table_name}.name IN (?) AND #{Tagging.table_name}.taggable_type = '#{name}')", tags])
+            tags_conditions = tags.map { |t| sanitize_sql(["#{Tag.table_name}.name LIKE ?", t]) }.join(" OR ")
+            conditions << sanitize_sql(["#{table_name}.id NOT IN (SELECT #{Tagging.table_name}.taggable_id FROM #{Tagging.table_name} LEFT OUTER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id WHERE (#{tags_conditions}) AND #{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)})", tags])
           else
-            conditions << sanitize_sql(["#{table_name}_tags.name IN (?)", tags])
-            group = "#{taggings_alias}.taggable_id HAVING COUNT(#{taggings_alias}.taggable_id) = #{tags.size}" if options.delete(:match_all)
+            conditions << tags.map { |t| sanitize_sql(["#{tags_alias}.name LIKE ?", t]) }.join(" OR ")
+            
+            if options.delete(:match_all)
+              group = "#{taggings_alias}.taggable_id HAVING COUNT(#{taggings_alias}.taggable_id) = #{tags.size}"
+            end
           end
           
           { :select => "DISTINCT #{table_name}.*",
-            :joins => "LEFT OUTER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = '#{name}' " +
+            :joins => "LEFT OUTER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = #{quote_value(base_class.name)} " +
                       "LEFT OUTER JOIN #{Tag.table_name} #{tags_alias} ON #{tags_alias}.id = #{taggings_alias}.tag_id",
             :conditions => conditions.join(" AND "),
             :group      => group
@@ -80,7 +84,7 @@ module ActiveRecord
         #  :limit - The maximum number of tags to return
         #  :order - A piece of SQL to order by. Eg 'tags.count desc' or 'taggings.created_at desc'
         #  :at_least - Exclude tags with a frequency less than the given value
-        #  :at_most - Exclude tags with a frequency greater then the given value
+        #  :at_most - Exclude tags with a frequency greater than the given value
         def tag_counts(*args)
           Tag.find(:all, find_options_for_tag_counts(*args))
         end
@@ -93,17 +97,16 @@ module ActiveRecord
           end_at = sanitize_sql(["#{Tagging.table_name}.created_at <= ?", options[:end_at]]) if options[:end_at]
           
           conditions = [
-            "#{Tagging.table_name}.taggable_type = #{quote_value(name)}",
+            "#{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)}",
             options[:conditions],
             scope && scope[:conditions],
             start_at,
             end_at
-          ]
-          conditions = conditions.compact.join(' and ')
+          ].compact.join(' AND ')
           
           at_least  = sanitize_sql(['COUNT(*) >= ?', options[:at_least]]) if options[:at_least]
           at_most   = sanitize_sql(['COUNT(*) <= ?', options[:at_most]]) if options[:at_most]
-          having    = [at_least, at_most].compact.join(' and ')
+          having    = [at_least, at_most].compact.join(' AND ')
           group_by  = "#{Tag.table_name}.id, #{Tag.table_name}.name HAVING COUNT(*) > 0"
           group_by << " AND #{having}" unless having.blank?
           
@@ -148,7 +151,7 @@ module ActiveRecord
             tags.delete(*old_tags) if old_tags.any?
             
             new_tag_names.each do |new_tag_name|
-              tags << Tag.find_or_create_by_name(new_tag_name)
+              tags << Tag.find_or_create_with_like_by_name(new_tag_name)
             end
           end
           true

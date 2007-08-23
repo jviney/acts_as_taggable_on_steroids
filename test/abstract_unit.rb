@@ -69,6 +69,21 @@ class Test::Unit::TestCase #:nodoc:
   def assert_no_queries(&block)
     assert_queries(0, &block)
   end
+  
+  # From Rails trunk
+  def assert_difference(expressions, difference = 1, message = nil, &block)
+    expression_evaluations = [expressions].flatten.collect{|expression| lambda { eval(expression, block.binding) } } 
+    
+    original_values = expression_evaluations.inject([]) { |memo, expression| memo << expression.call }
+    yield
+    expression_evaluations.each_with_index do |expression, i|
+      assert_equal original_values[i] + difference, expression.call, message
+    end
+  end
+  
+  def assert_no_difference(expressions, message = nil, &block)
+    assert_difference expressions, 0, message, &block
+  end
 end
 
 ActiveRecord::Base.connection.class.class_eval do  

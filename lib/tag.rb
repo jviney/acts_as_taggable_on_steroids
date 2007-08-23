@@ -6,6 +6,11 @@ class Tag < ActiveRecord::Base
   
   class << self
     delegate :delimiter, :delimiter=, :to => TagList
+    
+    # LIKE is used for cross-database case-insensitivity
+    def find_or_create_with_like_by_name(name)
+      find(:first, :conditions => ["name LIKE ?", name]) || create(:name => name)
+    end
   end
   
   def ==(object)

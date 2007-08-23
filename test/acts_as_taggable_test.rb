@@ -249,6 +249,23 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equal 'None', posts(:jonathan_sky).cached_tag_list
     assert_equal 'None', posts(:jonathan_sky).reload.cached_tag_list
   end
+
+  def test_basic_functionalty_with_sti
+    special_post = SpecialPost.create!(:text => "Test", :tag_list => "Random")
+    
+    assert_equal [special_post],  SpecialPost.find_tagged_with("Random")
+    assert Post.find_tagged_with("Random").include?(special_post)
+  end
+  
+  def test_case_insensitivity
+    assert_difference "Tag.count", 1 do
+      Post.create!(:text => "Test", :tag_list => "one")
+      Post.create!(:text => "Test", :tag_list => "One")
+    end
+    
+    assert_equal Post.find_tagged_with("Nature"), Post.find_tagged_with("nature")
+  end
+  
 end
 
 class ActsAsTaggableOnSteroidsFormTest < Test::Unit::TestCase
