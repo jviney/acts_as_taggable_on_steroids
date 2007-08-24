@@ -104,6 +104,10 @@ module ActiveRecord
             end_at
           ].compact.join(' AND ')
           
+          joins = ["LEFT OUTER JOIN #{Tagging.table_name} ON #{Tag.table_name}.id = #{Tagging.table_name}.tag_id"]
+          joins << "LEFT OUTER JOIN #{table_name} ON #{table_name}.#{primary_key} = #{Tagging.table_name}.taggable_id"
+          joins << scope[:joins] if scope && scope[:joins]
+          
           at_least  = sanitize_sql(['COUNT(*) >= ?', options[:at_least]]) if options[:at_least]
           at_most   = sanitize_sql(['COUNT(*) <= ?', options[:at_most]]) if options[:at_most]
           having    = [at_least, at_most].compact.join(' AND ')
@@ -111,7 +115,7 @@ module ActiveRecord
           group_by << " AND #{having}" unless having.blank?
           
           { :select     => "#{Tag.table_name}.id, #{Tag.table_name}.name, COUNT(*) AS count", 
-            :joins      => "LEFT OUTER JOIN #{Tagging.table_name} ON #{Tag.table_name}.id = #{Tagging.table_name}.tag_id LEFT OUTER JOIN #{table_name} ON #{table_name}.#{primary_key} = #{Tagging.table_name}.taggable_id",
+            :joins      => joins.join(" "),
             :conditions => conditions,
             :group      => group_by,
             :order      => options[:order],

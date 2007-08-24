@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/abstract_unit'
 
 class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
-  fixtures :tags, :taggings, :posts, :users, :photos
+  fixtures :tags, :taggings, :posts, :users, :photos, :subscriptions, :magazines
   
   def test_find_tagged_with
     assert_equivalent [posts(:jonathan_sky), posts(:sam_flowers)], Post.find_tagged_with('"Very good"')
@@ -110,6 +110,10 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   def test_tag_counts_on_association_with_options
     assert_equal [], users(:jonathan).posts.tag_counts(:conditions => '1=0')
     assert_tag_counts users(:jonathan).posts.tag_counts(:at_most => 2), :good => 1, :question => 1
+  end
+  
+  def test_tag_counts_on_has_many_through
+    assert_tag_counts users(:jonathan).magazines.tag_counts, :good => 1
   end
   
   def test_tag_counts_respects_custom_table_names
@@ -265,7 +269,6 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     
     assert_equal Post.find_tagged_with("Nature"), Post.find_tagged_with("nature")
   end
-  
 end
 
 class ActsAsTaggableOnSteroidsFormTest < Test::Unit::TestCase
