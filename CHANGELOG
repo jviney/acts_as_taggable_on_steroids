@@ -1,3 +1,7 @@
+[25 August 2007]
+
+* Make tag_counts work with has_many :through
+
 [23 August 2007]
 
 * Make search comparisons case-insensitive across different databases. [Moisés Machado]
