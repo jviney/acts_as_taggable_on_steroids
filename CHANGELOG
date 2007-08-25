@@ -2,8 +2,6 @@
 
 * Remove deprecated Tag.delimiter. Use TagList.delimiter instead.
 
-* Remove deprecated TagCountsAssociation. Scoping is used instead.
-
 [25 August 2007]
 
 * Make tag_counts work with has_many :through
