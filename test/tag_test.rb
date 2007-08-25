@@ -31,12 +31,4 @@ class TagTest < Test::Unit::TestCase
     assert_equal Tag.new(:name => 'A'), Tag.new(:name => 'A')
     assert_not_equal Tag.new(:name => 'A'), Tag.new(:name => 'B')
   end
-  
-  def test_deprecated_delimiter
-    original_delimiter = Tag.delimiter
-    Tag.delimiter = ":"
-    assert_equal ":", TagList.delimiter
-  ensure
-    TagList.delimiter = original_delimiter
-  end
 end

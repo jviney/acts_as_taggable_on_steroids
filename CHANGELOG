@@ -1,3 +1,9 @@
+[26 August 2006]
+
+* Remove deprecated Tag.delimiter. Use TagList.delimiter instead.
+
+* Remove deprecated TagCountsAssociation. Scoping is used instead.
+
 [25 August 2007]
 
 * Make tag_counts work with has_many :through
@@ -67,6 +73,7 @@
 [31 March 2007]
 
 * Add Tag.delimiter accessor to change how tags are parsed.
+
 * Fix :include => :tags when used with find_tagged_with
 
 [7 March 2007]
