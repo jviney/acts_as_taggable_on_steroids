@@ -25,9 +25,7 @@ class TagList
     @names.delete_if { |name| names.include?(name) }
   end
   
-  def blank?
-    @names.empty?
-  end
+  delegate :blank?, :include?, :empty?, :to => :names
   
   def to_s
     @names.map do |name|

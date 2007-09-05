@@ -99,4 +99,10 @@ class TagListTest < Test::Unit::TestCase
     tag_list.remove("One")
     assert_equal %w(Two), tag_list.names
   end
+  
+  def test_method_missing
+    assert_equal true, TagList.new.empty?
+    assert_equal true, TagList.new.blank?
+    assert_equal true, TagList.new("One").include?("One")
+  end
 end

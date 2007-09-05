@@ -1,3 +1,7 @@
+[6 September 2007]
+
+* Add TagList#include? and TagList#empty?
+
 [26 August 2006]
 
 * Remove deprecated Tag.delimiter. Use TagList.delimiter instead.
