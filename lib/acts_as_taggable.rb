@@ -38,7 +38,7 @@ module ActiveRecord
         #   :conditions - A piece of SQL conditions to add to the query
         def find_options_for_tagged_with(tags, options = {})
           tags = if tags.is_a?(String)
-            TagList.from(tags).names
+            TagList.from(tags)
           else
             tags.dup
           end
@@ -131,7 +131,7 @@ module ActiveRecord
           elsif caching_tag_list? and !send(self.class.cached_tag_list_column_name).nil?
             @tag_list = TagList.from(send(self.class.cached_tag_list_column_name))
           else
-            @tag_list = TagList.new(tags.map(&:name))
+            @tag_list = TagList.new(*tags.map(&:name))
           end
         end
         
@@ -148,8 +148,8 @@ module ActiveRecord
         def save_tags
           return unless @tag_list
           
-          new_tag_names = @tag_list.names - tags.map(&:name)
-          old_tags = tags.reject { |tag| @tag_list.names.include?(tag.name) }
+          new_tag_names = @tag_list - tags.map(&:name)
+          old_tags = tags.reject { |tag| @tag_list.include?(tag.name) }
           
           self.class.transaction do
             tags.delete(*old_tags) if old_tags.any?

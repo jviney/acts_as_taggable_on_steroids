@@ -1,45 +1,38 @@
-class TagList
+class TagList < Array
   cattr_accessor :delimiter
   self.delimiter = ','
   
-  attr_reader :names
-  
   def initialize(*names)
-    @names = []
     add(*names)
   end
   
   def add(*names)
-    names = names.flatten
-    
     # Strip whitespace and remove blank or duplicate tags
-    names.map!(&:strip)
     names.reject!(&:blank?)
+    names.map!(&:strip)
     
-    @names.concat(names)
-    @names.uniq!
+    concat(names)
+    uniq!
+  end
+  
+  # Backwards compatibility
+  def names
+    self
   end
   
   def remove(*names)
-    names = names.flatten
-    @names.delete_if { |name| names.include?(name) }
+    delete_if { |name| names.include?(name) }
   end
   
-  delegate :blank?, :include?, :empty?, :to => :names
-  
   def to_s
-    @names.map do |name|
+    map do |name|
       name.include?(delimiter) ? "\"#{name}\"" : name
     end.join(delimiter.ends_with?(" ") ? delimiter : "#{delimiter} ")
   end
   
-  def ==(other)
-    super || (other.is_a?(TagList) && other.names == @names)
-  end
-  
   class << self
     def from(string)
-      new(parse(string))
+      new(*parse(string))
     end
     
     def parse(string)

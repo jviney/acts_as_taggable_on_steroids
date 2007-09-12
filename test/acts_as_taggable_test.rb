@@ -134,12 +134,12 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   end
   
   def test_tag_list_reader
-    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list.names
-    assert_equivalent ["Bad", "Crazy animal"], photos(:jonathan_bad_cat).tag_list.names
+    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list
+    assert_equivalent ["Bad", "Crazy animal"], photos(:jonathan_bad_cat).tag_list
   end
   
   def test_reassign_tag_list
-    assert_equivalent ["Nature", "Question"], posts(:jonathan_rain).tag_list.names
+    assert_equivalent ["Nature", "Question"], posts(:jonathan_rain).tag_list
     posts(:jonathan_rain).taggings.reload
     
     # Only an update of the posts table should be executed
@@ -147,40 +147,40 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
       posts(:jonathan_rain).update_attributes!(:tag_list => posts(:jonathan_rain).tag_list.to_s)
     end
     
-    assert_equivalent ["Nature", "Question"], posts(:jonathan_rain).tag_list.names
+    assert_equivalent ["Nature", "Question"], posts(:jonathan_rain).tag_list
   end
   
   def test_new_tags
-    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list.names
+    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list
     posts(:jonathan_sky).update_attributes!(:tag_list => "#{posts(:jonathan_sky).tag_list}, One, Two")
-    assert_equivalent ["Very good", "Nature", "One", "Two"], posts(:jonathan_sky).tag_list.names
+    assert_equivalent ["Very good", "Nature", "One", "Two"], posts(:jonathan_sky).tag_list
   end
   
   def test_remove_tag
-    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list.names
+    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list
     posts(:jonathan_sky).update_attributes!(:tag_list => "Nature")
-    assert_equivalent ["Nature"], posts(:jonathan_sky).tag_list.names
+    assert_equivalent ["Nature"], posts(:jonathan_sky).tag_list
   end
   
   def test_change_case_of_tags
-    original_tag_names = photos(:jonathan_questioning_dog).tag_list.names
+    original_tag_names = photos(:jonathan_questioning_dog).tag_list
     photos(:jonathan_questioning_dog).update_attributes!(:tag_list => photos(:jonathan_questioning_dog).tag_list.to_s.upcase)
     
     # The new tag list is not uppercase becuase the AR finders are not case-sensitive
     # and find the old tags when re-tagging with the uppercase tags.
-    assert_equivalent original_tag_names, photos(:jonathan_questioning_dog).reload.tag_list.names
+    assert_equivalent original_tag_names, photos(:jonathan_questioning_dog).reload.tag_list
   end
   
   def test_remove_and_add_tag
-    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list.names
+    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list
     posts(:jonathan_sky).update_attributes!(:tag_list => "Nature, Beautiful")
-    assert_equivalent ["Nature", "Beautiful"], posts(:jonathan_sky).tag_list.names
+    assert_equivalent ["Nature", "Beautiful"], posts(:jonathan_sky).tag_list
   end
   
   def test_tags_not_saved_if_validation_fails
-    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list.names
+    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list
     assert !posts(:jonathan_sky).update_attributes(:tag_list => "One, Two", :text => "")
-    assert_equivalent ["Very good", "Nature"], Post.find(posts(:jonathan_sky).id).tag_list.names
+    assert_equivalent ["Very good", "Nature"], Post.find(posts(:jonathan_sky).id).tag_list
   end
   
   def test_tag_list_accessors_on_new_record
@@ -230,7 +230,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     posts(:jonathan_sky).reload
     
     assert_no_queries do
-      assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list.names
+      assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list
     end
   end
   
@@ -247,7 +247,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   def test_cached_tag_list_updated
     assert_nil posts(:jonathan_sky).cached_tag_list
     posts(:jonathan_sky).save!
-    assert_equivalent ["Very good", "Nature"], TagList.from(posts(:jonathan_sky).cached_tag_list).names
+    assert_equivalent ["Very good", "Nature"], TagList.from(posts(:jonathan_sky).cached_tag_list)
     posts(:jonathan_sky).update_attributes!(:tag_list => "None")
     
     assert_equal 'None', posts(:jonathan_sky).cached_tag_list
