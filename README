@@ -17,7 +17,7 @@ their site to show your support.
 == Resources
 
 Install
-  * script/plugin install http://svn.viney.net.nz/things/trunk/rails_plugins/acts_as_taggable_on_steroids
+  * script/plugin install http://svn.viney.net.nz/things/rails/plugins/acts_as_taggable_on_steroids
 
 == Usage
 
