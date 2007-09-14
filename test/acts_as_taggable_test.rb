@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/abstract_unit'
 
 class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
-  fixtures :tags, :taggings, :posts, :users, :photos
+  fixtures :tags, :taggings, :posts, :users, :photos, :subscriptions, :magazines
   
   def test_find_tagged_with
     assert_equivalent [posts(:jonathan_sky), posts(:sam_flowers)], Post.find_tagged_with('"Very good"')
@@ -17,6 +17,11 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equal Photo.find_tagged_with('"Crazy animal" Bad'), Photo.find_tagged_with([tags(:animal), tags(:bad)])
   end
   
+  def test_find_tagged_with_nothing
+    assert_equal [], Post.find_tagged_with("")
+    assert_equal [], Post.find_tagged_with([])
+  end
+  
   def test_find_tagged_with_nonexistant_tags
     assert_equal [], Post.find_tagged_with('ABCDEFG')
     assert_equal [], Photo.find_tagged_with(['HIJKLM'])
@@ -26,6 +31,45 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   def test_find_tagged_with_matching_all_tags
     assert_equivalent [photos(:jonathan_dog)], Photo.find_tagged_with('Crazy animal, "Nature"', :match_all => true)
     assert_equivalent [posts(:jonathan_sky), posts(:sam_flowers)], Post.find_tagged_with(['Very good', 'Nature'], :match_all => true)
+  end
+  
+  def test_find_tagged_with_exclusions
+    assert_equivalent [photos(:jonathan_questioning_dog), photos(:jonathan_bad_cat)], Photo.find_tagged_with("Nature", :exclude => true)
+    assert_equivalent [posts(:jonathan_grass), posts(:jonathan_rain)], Post.find_tagged_with("'Very good', Bad", :exclude => true)
+  end
+  
+  def test_find_options_for_tagged_with_no_tags_returns_empty_hash
+    assert_equal Hash.new, Post.find_options_for_tagged_with("")
+    assert_equal Hash.new, Post.find_options_for_tagged_with([nil])
+  end
+  
+  def test_find_options_for_tagged_with_leavs_arguments_unchanged
+    original_tags = photos(:jonathan_questioning_dog).tags.dup
+    Photo.find_options_for_tagged_with(photos(:jonathan_questioning_dog).tags)
+    assert_equal original_tags, photos(:jonathan_questioning_dog).tags
+  end
+  
+  def test_find_options_for_tagged_with_respects_custom_table_name
+    Tagging.table_name = "categorisations"
+    Tag.table_name = "categories"
+    
+    options = Photo.find_options_for_tagged_with("Hello")
+    
+    assert_no_match Regexp.new(" taggings "), options[:joins]
+    assert_no_match Regexp.new(" tags "), options[:joins]
+    
+    assert_match Regexp.new(" categorisations "), options[:joins]
+    assert_match Regexp.new(" categories "), options[:joins]
+  ensure
+    Tagging.table_name = "taggings"
+    Tag.table_name = "tags"
+  end
+  
+  def test_include_tags_on_find_tagged_with
+    assert_nothing_raised do
+      Photo.find_tagged_with('Nature', :include => :tags)
+      Photo.find_tagged_with("Nature", :include => { :taggings => :tag })
+    end
   end
   
   def test_basic_tag_counts_on_class
@@ -55,7 +99,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equal [tags(:nature), tags(:good)], Post.tag_counts(:order => 'count desc', :limit => 2)
   end
   
-  def test_tag_counts_extension
+  def test_tag_counts_on_association
     assert_tag_counts users(:jonathan).posts.tag_counts, :good => 1, :nature => 3, :question => 1
     assert_tag_counts users(:sam).posts.tag_counts, :good => 1, :nature => 2, :bad => 1
     
@@ -63,56 +107,88 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_tag_counts users(:sam).photos.tag_counts, :nature => 2, :good => 1
   end
   
-  def test_tag_counts_extension_with_options
+  def test_tag_counts_on_association_with_options
     assert_equal [], users(:jonathan).posts.tag_counts(:conditions => '1=0')
     assert_tag_counts users(:jonathan).posts.tag_counts(:at_most => 2), :good => 1, :question => 1
   end
   
-  def test_tag_list
-    assert_equivalent Tag.parse('"Very good", Nature'), Tag.parse(posts(:jonathan_sky).tag_list)
-    assert_equivalent Tag.parse('Bad, "Crazy animal"'), Tag.parse(photos(:jonathan_bad_cat).tag_list)
+  def test_tag_counts_on_has_many_through
+    assert_tag_counts users(:jonathan).magazines.tag_counts, :good => 1
+  end
+  
+  def test_tag_counts_respects_custom_table_names
+    Tagging.table_name = "categorisations"
+    Tag.table_name = "categories"
+    
+    options = Photo.find_options_for_tag_counts(:start_at => 2.weeks.ago, :end_at => Date.today)
+    sql = options.values.join(' ')
+    
+    assert_no_match /taggings/, sql
+    assert_no_match /tags/, sql
+    
+    assert_match /categorisations/, sql
+    assert_match /categories/, sql
+  ensure
+    Tagging.table_name = "taggings"
+    Tag.table_name = "tags"
+  end
+  
+  def test_tag_list_reader
+    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list
+    assert_equivalent ["Bad", "Crazy animal"], photos(:jonathan_bad_cat).tag_list
   end
   
   def test_reassign_tag_list
-    assert_equivalent Tag.parse('Nature, Question'), Tag.parse(posts(:jonathan_rain).tag_list)
-    assert posts(:jonathan_rain).update_attributes(:tag_list => posts(:jonathan_rain).tag_list)
-    assert_equivalent Tag.parse('Nature, Question'), Tag.parse(posts(:jonathan_rain).tag_list)
+    assert_equivalent ["Nature", "Question"], posts(:jonathan_rain).tag_list
+    posts(:jonathan_rain).taggings.reload
+    
+    # Only an update of the posts table should be executed
+    assert_queries 1 do
+      posts(:jonathan_rain).update_attributes!(:tag_list => posts(:jonathan_rain).tag_list.to_s)
+    end
+    
+    assert_equivalent ["Nature", "Question"], posts(:jonathan_rain).tag_list
   end
   
-  def test_assign_new_tags
-    assert_equivalent Tag.parse('"Very good", Nature'), Tag.parse(posts(:jonathan_sky).tag_list)
-    assert posts(:jonathan_sky).update_attributes(:tag_list => "#{posts(:jonathan_sky).tag_list}, One, Two")
-    assert_equivalent Tag.parse('"Very good", Nature, One, Two'), Tag.parse(posts(:jonathan_sky).tag_list)
+  def test_new_tags
+    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list
+    posts(:jonathan_sky).update_attributes!(:tag_list => "#{posts(:jonathan_sky).tag_list}, One, Two")
+    assert_equivalent ["Very good", "Nature", "One", "Two"], posts(:jonathan_sky).tag_list
   end
   
   def test_remove_tag
-    assert_equivalent Tag.parse('"Very good", Nature'), Tag.parse(posts(:jonathan_sky).tag_list)
-    assert posts(:jonathan_sky).update_attributes(:tag_list => "Nature")
-    assert_equivalent Tag.parse('Nature'), Tag.parse(posts(:jonathan_sky).tag_list)
+    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list
+    posts(:jonathan_sky).update_attributes!(:tag_list => "Nature")
+    assert_equivalent ["Nature"], posts(:jonathan_sky).tag_list
+  end
+  
+  def test_change_case_of_tags
+    original_tag_names = photos(:jonathan_questioning_dog).tag_list
+    photos(:jonathan_questioning_dog).update_attributes!(:tag_list => photos(:jonathan_questioning_dog).tag_list.to_s.upcase)
+    
+    # The new tag list is not uppercase becuase the AR finders are not case-sensitive
+    # and find the old tags when re-tagging with the uppercase tags.
+    assert_equivalent original_tag_names, photos(:jonathan_questioning_dog).reload.tag_list
   end
   
   def test_remove_and_add_tag
-    assert_equivalent Tag.parse('"Very good", Nature'), Tag.parse(posts(:jonathan_sky).tag_list)
-    assert posts(:jonathan_sky).update_attributes(:tag_list => "Nature, Beautiful")
-    assert_equivalent Tag.parse('Nature, Beautiful'), Tag.parse(posts(:jonathan_sky).tag_list)
+    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list
+    posts(:jonathan_sky).update_attributes!(:tag_list => "Nature, Beautiful")
+    assert_equivalent ["Nature", "Beautiful"], posts(:jonathan_sky).tag_list
   end
   
   def test_tags_not_saved_if_validation_fails
-    assert_equivalent Tag.parse('"Very good", Nature'), Tag.parse(posts(:jonathan_sky).tag_list)
-    assert !posts(:jonathan_sky).update_attributes(:tag_list => "One Two", :text => "")
-    assert_equivalent Tag.parse('"Very good", Nature'), Tag.parse(Post.find(posts(:jonathan_sky).id).tag_list)
+    assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list
+    assert !posts(:jonathan_sky).update_attributes(:tag_list => "One, Two", :text => "")
+    assert_equivalent ["Very good", "Nature"], Post.find(posts(:jonathan_sky).id).tag_list
   end
   
   def test_tag_list_accessors_on_new_record
     p = Post.new(:text => 'Test')
     
-    assert_equal "", p.tag_list
+    assert p.tag_list.blank?
     p.tag_list = "One, Two"
-    assert_equal "One, Two", p.tag_list
-  end
-  
-  def test_read_tag_list_with_commas
-    assert ["Question, Crazy animal", "Crazy animal, Question"].include?(photos(:jonathan_questioning_dog).tag_list)
+    assert_equal "One, Two", p.tag_list.to_s
   end
   
   def test_clear_tag_list_with_nil
@@ -123,7 +199,6 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert p.tag_list.blank?
     
     assert p.reload.tag_list.blank?
-    assert Photo.find(p.id).tag_list.blank?
   end
   
   def test_clear_tag_list_with_string
@@ -134,7 +209,6 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert p.tag_list.blank?
     
     assert p.reload.tag_list.blank?
-    assert Photo.find(p.id).tag_list.blank?
   end
   
   def test_tag_list_reset_on_reload
@@ -143,5 +217,68 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     p.tag_list = nil
     assert p.tag_list.blank?
     assert !p.reload.tag_list.blank?
+  end
+  
+  def test_tag_list_populated_when_cache_nil
+    assert_nil posts(:jonathan_sky).cached_tag_list
+    posts(:jonathan_sky).save!
+    assert_equal posts(:jonathan_sky).tag_list.to_s, posts(:jonathan_sky).cached_tag_list
+  end
+  
+  def test_cached_tag_list_used
+    posts(:jonathan_sky).save!
+    posts(:jonathan_sky).reload
+    
+    assert_no_queries do
+      assert_equivalent ["Very good", "Nature"], posts(:jonathan_sky).tag_list
+    end
+  end
+  
+  def test_cached_tag_list_not_used
+    # Load fixture and column information
+    posts(:jonathan_sky).taggings(:reload)
+    
+    assert_queries 1 do
+      # Tags association will be loaded
+      posts(:jonathan_sky).tag_list
+    end
+  end
+  
+  def test_cached_tag_list_updated
+    assert_nil posts(:jonathan_sky).cached_tag_list
+    posts(:jonathan_sky).save!
+    assert_equivalent ["Very good", "Nature"], TagList.from(posts(:jonathan_sky).cached_tag_list)
+    posts(:jonathan_sky).update_attributes!(:tag_list => "None")
+    
+    assert_equal 'None', posts(:jonathan_sky).cached_tag_list
+    assert_equal 'None', posts(:jonathan_sky).reload.cached_tag_list
+  end
+
+  def test_basic_functionalty_with_sti
+    special_post = SpecialPost.create!(:text => "Test", :tag_list => "Random")
+    
+    assert_equal [special_post],  SpecialPost.find_tagged_with("Random")
+    assert Post.find_tagged_with("Random").include?(special_post)
+  end
+  
+  def test_case_insensitivity
+    assert_difference "Tag.count", 1 do
+      Post.create!(:text => "Test", :tag_list => "one")
+      Post.create!(:text => "Test", :tag_list => "One")
+    end
+    
+    assert_equal Post.find_tagged_with("Nature"), Post.find_tagged_with("nature")
+  end
+end
+
+class ActsAsTaggableOnSteroidsFormTest < Test::Unit::TestCase
+  fixtures :tags, :taggings, :posts, :users, :photos
+  
+  include ActionView::Helpers::FormHelper
+  
+  def test_tag_list_contents
+    fields_for :post, posts(:jonathan_sky) do |f|
+      assert_match /Very good, Nature/, f.text_field(:tag_list)
+    end
   end
 end

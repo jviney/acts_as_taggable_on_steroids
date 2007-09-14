@@ -1,42 +1,36 @@
 require 'test/unit'
 
 begin
-  require File.dirname(__FILE__) + '/../../../../config/boot'
-  require 'active_record'
+  require File.dirname(__FILE__) + '/../../../../config/environment'
 rescue LoadError
   require 'rubygems'
   require_gem 'activerecord'
+  require_gem 'actionpack'
+end
+
+# Search for fixtures first
+fixture_path = File.dirname(__FILE__) + '/fixtures/'
+begin
+  Dependencies.load_paths.insert(0, fixture_path)
+rescue
+  $LOAD_PATH.unshift(fixture_path)
 end
 
 require 'active_record/fixtures'
 
 require File.dirname(__FILE__) + '/../lib/acts_as_taggable'
-require File.dirname(__FILE__) + '/../lib/tag'
-require File.dirname(__FILE__) + '/../lib/tagging'
-require File.dirname(__FILE__) + '/../lib/tag_counts_extension'
+require_dependency File.dirname(__FILE__) + '/../lib/tag_list'
 
-config = YAML::load(IO.read(File.dirname(__FILE__) + '/database.yml'))
 ActiveRecord::Base.logger = Logger.new(File.dirname(__FILE__) + '/debug.log')
-ActiveRecord::Base.establish_connection(config[ENV['DB'] || 'mysql'])
+ActiveRecord::Base.configurations = YAML::load(IO.read(File.dirname(__FILE__) + '/database.yml'))
+ActiveRecord::Base.establish_connection(ENV['DB'] || 'mysql')
 
 load(File.dirname(__FILE__) + '/schema.rb')
 
-Test::Unit::TestCase.fixture_path = File.dirname(__FILE__) + '/fixtures/'
-$LOAD_PATH.unshift(Test::Unit::TestCase.fixture_path)
+Test::Unit::TestCase.fixture_path = fixture_path
 
 class Test::Unit::TestCase #:nodoc:
-  def create_fixtures(*table_names)
-    if block_given?
-      Fixtures.create_fixtures(Test::Unit::TestCase.fixture_path, table_names) { yield }
-    else
-      Fixtures.create_fixtures(Test::Unit::TestCase.fixture_path, table_names)
-    end
-  end
-
-  # Turn off transactional fixtures if you're working with MyISAM tables in MySQL
   self.use_transactional_fixtures = true
-  
-  # Instantiated fixtures are slow, but give you @david where you otherwise would need people(:david)
   self.use_instantiated_fixtures  = false
   
   def assert_equivalent(expected, actual, message = nil)
@@ -64,4 +58,40 @@ class Test::Unit::TestCase #:nodoc:
       assert false, "The following tag counts were not present: #{expected_values.inspect}"
     end
   end
+  
+  def assert_queries(num = 1)
+    $query_count = 0
+    yield
+  ensure
+    assert_equal num, $query_count, "#{$query_count} instead of #{num} queries were executed."
+  end
+
+  def assert_no_queries(&block)
+    assert_queries(0, &block)
+  end
+  
+  # From Rails trunk
+  def assert_difference(expressions, difference = 1, message = nil, &block)
+    expression_evaluations = [expressions].flatten.collect{|expression| lambda { eval(expression, block.binding) } } 
+    
+    original_values = expression_evaluations.inject([]) { |memo, expression| memo << expression.call }
+    yield
+    expression_evaluations.each_with_index do |expression, i|
+      assert_equal original_values[i] + difference, expression.call, message
+    end
+  end
+  
+  def assert_no_difference(expressions, message = nil, &block)
+    assert_difference expressions, 0, message, &block
+  end
+end
+
+ActiveRecord::Base.connection.class.class_eval do  
+  def execute_with_counting(sql, name = nil, &block)
+    $query_count ||= 0
+    $query_count += 1
+    execute_without_counting(sql, name, &block)
+  end
+  
+  alias_method_chain :execute, :counting
 end

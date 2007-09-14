@@ -1,28 +1,12 @@
 class Tag < ActiveRecord::Base
   has_many :taggings
   
-  def self.parse(list)
-    tags = []
-    
-    return tags if list.blank?
-    list = list.dup
-    
-    # Parse the quoted tags
-    list.gsub!(/"(.*?)"\s*,?\s*/) { tags << $1; "" }
-    
-    # Strip whitespace and remove blank tags
-    (tags + list.split(',')).map!(&:strip).delete_if(&:blank?)
-  end
+  validates_presence_of :name
+  validates_uniqueness_of :name
   
-  # A list of all the objects tagged with this tag
-  def tagged
-    taggings.collect(&:taggable)
-  end
-  
-  # Tag a taggable with this tag
-  def tag(taggable)
-    Tagging.create :tag_id => id, :taggable => taggable
-    taggings.reset
+  # LIKE is used for cross-database case-insensitivity
+  def self.find_or_create_with_like_by_name(name)
+    find(:first, :conditions => ["name LIKE ?", name]) || create(:name => name)
   end
   
   def ==(object)

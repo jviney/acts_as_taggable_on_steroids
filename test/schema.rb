@@ -16,11 +16,22 @@ ActiveRecord::Schema.define :version => 0 do
   
   create_table :posts, :force => true do |t|
     t.column :text, :text
+    t.column :cached_tag_list, :string
     t.column :user_id, :integer
+    t.column :type, :string
   end
   
   create_table :photos, :force => true do |t|
     t.column :title, :string
     t.column :user_id, :integer
+  end
+  
+  create_table :subscriptions, :force => true do |t|
+    t.column :user_id, :integer
+    t.column :magazine_id, :integer
+  end
+  
+  create_table :magazines, :force => true do |t|
+    t.column :name, :string
   end
 end

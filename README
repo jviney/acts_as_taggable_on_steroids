@@ -1,5 +1,13 @@
 = acts_as_taggable_on_steroids
 
+If you find this plugin useful, please consider a donation to show your support!
+
+  http://www.paypal.com/cgi-bin/webscr?cmd=_send-money
+  
+  Email address: jonathan.viney@gmail.com
+  
+== Instructions
+
 This plugin is based on acts_as_taggable by DHH but includes extras
 such as tests, smarter tag assignment, and tag cloud calculations.
 
@@ -9,9 +17,16 @@ their site to show your support.
 == Resources
 
 Install
-  * script/plugin install http://svn.viney.net.nz/things/rails/plugins/acts_as_taggable_on_steroids
+  * script/plugin install http://svn.viney.net.nz/things/trunk/rails_plugins/acts_as_taggable_on_steroids
 
 == Usage
+
+=== Prepare database
+
+Generate and apply the migration:
+
+  ruby script/generate acts_as_taggable_migration
+  rake db:migrate
 
 === Basic tagging
 
@@ -30,10 +45,15 @@ We can now use the tagging methods provided by acts_as_taggable, <tt>tag_list</t
 methods work like regular attribute accessors.
 
   p = Post.find(:first)
-  p.tag_list # ""
+  p.tag_list.to_s # ""
   p.tag_list = "Funny, Silly"
   p.save
-  p.reload.tag_list # "Funny, Silly"
+  p.reload.tag_list.to_s # "Funny, Silly"
+  
+You can also add or remove arrays of tags.
+
+  p.tag_list.add("Great", "Awful")
+  p.tag_list.remove("Funny")
 
 === Finding tagged objects
 
@@ -51,21 +71,46 @@ find only objects that are tagged with all the given tags, use match_all.
 To construct tag clouds, the frequency of each tag needs to be calculated.
 Because we specified +acts_as_taggable+ on the <tt>Post</tt> class, we can
 get a calculation of all the tag counts by using <tt>Post.tag_counts</tt>. But what if we wanted a tag count for
-an individual user's posts? To achieve this we extend the <tt>:posts</tt> association like so:
-
-  class User < ActiveRecord::Base
-    has_many :posts, :extend => TagCountsExtension
-  end
-  
-This extension now allows us to do the following:
+an single user's posts? To achieve this we call tag_counts on the association:
 
   User.find(:first).posts.tag_counts
   
-This can be used to construct a tag cloud for the posts of an individual user. The +TagCountsExtension+ should
-only be used on associations that have +acts_as_taggable+ defined.
-  
-Problems, comments, and suggestions all welcome. jonathan.viney@gmail.com
+=== Caching
 
+It is useful to cache the list of tags to reduce the number of queries executed. To do this,
+add a column named <tt>cached_tag_list</tt> to the model which is being tagged.
+
+  class CachePostTagList < ActiveRecord::Migration
+    def self.up
+      # You should make sure that the column is long enough to hold
+      # the full tag list. In some situations the :text type may be more appropriate.
+      add_column :posts, :cached_tag_list, :string
+    end
+  end
+
+  class Post < ActiveRecord::Base
+    acts_as_taggable
+    
+    # The caching column defaults to cached_tag_list, but can be changed:
+    # 
+    # set_cached_tag_list_column_name "my_caching_column_name"
+  end
+
+The details of the caching are handled for you. Just continue to use the tag_list accessor as you normally would.
+Note that the cached tag list will not be updated if you directly create Tagging objects or manually append to the
+<tt>tags</tt> or <tt>taggings</tt> associations. To update the cached tag list you should call <tt>save_cached_tag_list</tt> manually.
+
+=== Delimiter
+
+If you want to change the delimiter used to parse and present tags, set TagList.delimiter.
+For example, to use spaces instead of commas, add the following to config/environment.rb:
+
+  TagList.delimiter = " "
+
+=== Other
+
+Problems, comments, and suggestions all welcome. jonathan.viney@gmail.com  
+  
 == Credits
 
 www.fanacious.com

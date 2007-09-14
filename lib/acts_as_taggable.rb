@@ -2,7 +2,7 @@ module ActiveRecord
   module Acts #:nodoc:
     module Taggable #:nodoc:
       def self.included(base)
-        base.extend(ClassMethods)  
+        base.extend(ClassMethods)
       end
       
       module ClassMethods
@@ -10,6 +10,7 @@ module ActiveRecord
           has_many :taggings, :as => :taggable, :dependent => :destroy, :include => :tag
           has_many :tags, :through => :taggings
           
+          before_save :save_cached_tag_list
           after_save :save_tags
           
           include ActiveRecord::Acts::Taggable::InstanceMethods
@@ -18,25 +19,62 @@ module ActiveRecord
           alias_method :reload_without_tag_list, :reload
           alias_method :reload, :reload_with_tag_list
         end
+        
+        def cached_tag_list_column_name
+          "cached_tag_list"
+        end
+        
+        def set_cached_tag_list_column_name(value = nil, &block)
+          define_attr_method :cached_tag_list_column_name, value, &block
+        end
       end
       
       module SingletonMethods
         # Pass either a tag string, or an array of strings or tags
-        def find_tagged_with(tags, options = {})
-          tags = Tag.parse(tags) if tags.is_a?(String)
-          return [] if tags.empty?
+        # 
+        # Options:
+        #   :exclude - Find models that are not tagged with the given tags
+        #   :match_all - Find models that match all of the given tags, not just one
+        #   :conditions - A piece of SQL conditions to add to the query
+        def find_options_for_tagged_with(tags, options = {})
+          tags = if tags.is_a?(String)
+            TagList.from(tags)
+          else
+            tags.dup
+          end
+          
+          tags.compact!
           tags.map!(&:to_s)
           
-          conditions = sanitize_sql(['tags.name IN (?)', tags])
-          conditions << " AND #{sanitize_sql(options.delete(:conditions))}" if options[:conditions]
+          return {} if tags.empty?
           
-          group = "taggings.taggable_id HAVING COUNT(taggings.taggable_id) = #{tags.size}" if options.delete(:match_all)
+          conditions = []
+          conditions << sanitize_sql(options.delete(:conditions)) if options[:conditions]
           
-          find(:all, { :select => "DISTINCT #{table_name}.*",
-            :joins => "LEFT OUTER JOIN taggings ON taggings.taggable_id = #{table_name}.#{primary_key} AND taggings.taggable_type = '#{name}' " +
-                      "LEFT OUTER JOIN tags ON tags.id = taggings.tag_id",
-            :conditions => conditions,
-            :group      => group }.merge(options))
+          taggings_alias, tags_alias = "#{table_name}_taggings", "#{table_name}_tags"
+          
+          if options.delete(:exclude)
+            tags_conditions = tags.map { |t| sanitize_sql(["#{Tag.table_name}.name LIKE ?", t]) }.join(" OR ")
+            conditions << sanitize_sql(["#{table_name}.id NOT IN (SELECT #{Tagging.table_name}.taggable_id FROM #{Tagging.table_name} LEFT OUTER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id WHERE (#{tags_conditions}) AND #{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)})", tags])
+          else
+            conditions << tags.map { |t| sanitize_sql(["#{tags_alias}.name LIKE ?", t]) }.join(" OR ")
+            
+            if options.delete(:match_all)
+              group = "#{taggings_alias}.taggable_id HAVING COUNT(#{taggings_alias}.taggable_id) = #{tags.size}"
+            end
+          end
+          
+          { :select => "DISTINCT #{table_name}.*",
+            :joins => "LEFT OUTER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = #{quote_value(base_class.name)} " +
+                      "LEFT OUTER JOIN #{Tag.table_name} #{tags_alias} ON #{tags_alias}.id = #{taggings_alias}.tag_id",
+            :conditions => conditions.join(" AND "),
+            :group      => group
+          }.update(options)
+        end
+        
+        def find_tagged_with(*args)
+          options = find_options_for_tagged_with(*args)
+          options.blank? ? [] : find(:all, options)
         end
         
         # Options:
@@ -46,88 +84,90 @@ module ActiveRecord
         #  :limit - The maximum number of tags to return
         #  :order - A piece of SQL to order by. Eg 'tags.count desc' or 'taggings.created_at desc'
         #  :at_least - Exclude tags with a frequency less than the given value
-        #  :at_most - Exclude tags with a frequency greater then the given value
-        def tag_counts(options = {})
+        #  :at_most - Exclude tags with a frequency greater than the given value
+        def tag_counts(*args)
+          Tag.find(:all, find_options_for_tag_counts(*args))
+        end
+        
+        def find_options_for_tag_counts(options = {})
           options.assert_valid_keys :start_at, :end_at, :conditions, :at_least, :at_most, :order, :limit
+
+          scope = scope(:find)
+          start_at = sanitize_sql(["#{Tagging.table_name}.created_at >= ?", options[:start_at]]) if options[:start_at]
+          end_at = sanitize_sql(["#{Tagging.table_name}.created_at <= ?", options[:end_at]]) if options[:end_at]
           
-          start_at = sanitize_sql(['taggings.created_at >= ?', options[:start_at]]) if options[:start_at]
-          end_at = sanitize_sql(['taggings.created_at <= ?', options[:end_at]]) if options[:end_at]
-          options[:conditions] = sanitize_sql(options[:conditions]) if options[:conditions]
+          conditions = [
+            "#{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)}",
+            options[:conditions],
+            scope && scope[:conditions],
+            start_at,
+            end_at
+          ].compact.join(' AND ')
           
-          conditions = [options[:conditions], start_at, end_at].compact.join(' and ')
+          joins = ["LEFT OUTER JOIN #{Tagging.table_name} ON #{Tag.table_name}.id = #{Tagging.table_name}.tag_id"]
+          joins << "LEFT OUTER JOIN #{table_name} ON #{table_name}.#{primary_key} = #{Tagging.table_name}.taggable_id"
+          joins << scope[:joins] if scope && scope[:joins]
           
-          at_least = sanitize_sql(['count >= ?', options[:at_least]]) if options[:at_least]
-          at_most = sanitize_sql(['count <= ?', options[:at_most]]) if options[:at_most]
-          having = [at_least, at_most].compact.join(' and ')
+          at_least  = sanitize_sql(['COUNT(*) >= ?', options[:at_least]]) if options[:at_least]
+          at_most   = sanitize_sql(['COUNT(*) <= ?', options[:at_most]]) if options[:at_most]
+          having    = [at_least, at_most].compact.join(' AND ')
+          group_by  = "#{Tag.table_name}.id, #{Tag.table_name}.name HAVING COUNT(*) > 0"
+          group_by << " AND #{having}" unless having.blank?
           
-          order = "order by #{options[:order]}" if options[:order]
-          limit = sanitize_sql(['limit ?', options[:limit]]) if options[:limit]
-          
-          Tag.find_by_sql <<-END
-            select tags.id, tags.name, count(*) as count
-            from tags left outer join taggings on tags.id = taggings.tag_id
-                      left outer join #{table_name} on #{table_name}.id = taggings.taggable_id
-            where taggings.taggable_type = "#{name}"
-              #{"and #{conditions}" unless conditions.blank?}
-            group by tags.id
-            having count(*) > 0 #{"and #{having}" unless having.blank?}
-            #{order}
-            #{limit}
-          END
+          { :select     => "#{Tag.table_name}.id, #{Tag.table_name}.name, COUNT(*) AS count", 
+            :joins      => joins.join(" "),
+            :conditions => conditions,
+            :group      => group_by,
+            :order      => options[:order],
+            :limit      => options[:limit]
+          }
         end
       end
       
       module InstanceMethods
-        attr_writer :tag_list
-        
         def tag_list
-          defined?(@tag_list) ? @tag_list : read_tags
-        end
-        
-        def save_tags
-          if defined?(@tag_list)
-            write_tags(@tag_list)
-            remove_tag_list
+          if @tag_list
+            @tag_list
+          elsif caching_tag_list? and !send(self.class.cached_tag_list_column_name).nil?
+            @tag_list = TagList.from(send(self.class.cached_tag_list_column_name))
+          else
+            @tag_list = TagList.new(*tags.map(&:name))
           end
         end
         
-        def write_tags(list)
-          new_tag_names = Tag.parse(list)
-          old_tagging_ids = []
+        def tag_list=(value)
+          @tag_list = TagList.from(value)
+        end
+        
+        def save_cached_tag_list
+          if caching_tag_list? and !tag_list.blank?
+            self[self.class.cached_tag_list_column_name] = tag_list.to_s
+          end
+        end
+        
+        def save_tags
+          return unless @tag_list
           
-          Tag.transaction do
-            taggings.each do |tagging|
-              index = new_tag_names.index(tagging.tag.name)
-              index ? new_tag_names.delete_at(index) : old_tagging_ids << tagging.id
+          new_tag_names = @tag_list - tags.map(&:name)
+          old_tags = tags.reject { |tag| @tag_list.include?(tag.name) }
+          
+          self.class.transaction do
+            tags.delete(*old_tags) if old_tags.any?
+            
+            new_tag_names.each do |new_tag_name|
+              tags << Tag.find_or_create_with_like_by_name(new_tag_name)
             end
-            
-            Tagging.delete_all(['id in (?)', old_tagging_ids]) unless old_tagging_ids.empty?
-            
-            # Create any new tags/taggings
-            new_tag_names.each do |name|
-              Tag.find_or_create_by_name(name).tag(self)
-            end
-            
-            taggings.reset
-            tags.reset
           end
           true
         end
 
-        def read_tags
-          tags.collect do |tag|
-            tag.name.include?(',') ? "\"#{tag.name}\"" : tag.name
-          end.join(', ')
-        end
-        
         def reload_with_tag_list(*args)
-          remove_tag_list
+          @tag_list = nil
           reload_without_tag_list(*args)
         end
         
-       private
-        def remove_tag_list
-          remove_instance_variable(:@tag_list) if defined?(@tag_list)
+        def caching_tag_list?
+          self.class.column_names.include?(self.class.cached_tag_list_column_name)
         end
       end
     end

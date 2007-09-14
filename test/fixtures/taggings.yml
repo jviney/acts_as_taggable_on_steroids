@@ -1,3 +1,4 @@
+# Posts
 jonathan_sky_good:
   id: 1
   tag_id: 1
@@ -61,7 +62,7 @@ sam_flowers_nature:
   taggable_type: Post
   created_at: 2006-08-09
   
-
+# Photos
 jonathan_dog_animal:
   id: 10
   tag_id: 5
@@ -124,3 +125,11 @@ sam_sky_nature:
   taggable_id: 5
   taggable_type: Photo
   created_at: 2006-08-18
+
+# Magazines
+ruby_good:
+  id: 50
+  tag_id: 1
+  taggable_id: 1
+  taggable_type: Magazine
+  created_at: 2007-08-25
