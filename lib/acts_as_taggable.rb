@@ -91,7 +91,7 @@ module ActiveRecord
         
         def find_options_for_tag_counts(options = {})
           options.assert_valid_keys :start_at, :end_at, :conditions, :at_least, :at_most, :order, :limit
-
+          
           scope = scope(:find)
           start_at = sanitize_sql(["#{Tagging.table_name}.created_at >= ?", options[:start_at]]) if options[:start_at]
           end_at = sanitize_sql(["#{Tagging.table_name}.created_at <= ?", options[:end_at]]) if options[:end_at]
@@ -122,13 +122,17 @@ module ActiveRecord
             :limit      => options[:limit]
           }
         end
+        
+        def caching_tag_list?
+          column_names.include?(cached_tag_list_column_name)
+        end
       end
       
       module InstanceMethods
         def tag_list
           if @tag_list
             @tag_list
-          elsif caching_tag_list? and !send(self.class.cached_tag_list_column_name).nil?
+          elsif self.class.caching_tag_list? and !send(self.class.cached_tag_list_column_name).nil?
             @tag_list = TagList.from(send(self.class.cached_tag_list_column_name))
           else
             @tag_list = TagList.new(*tags.map(&:name))
@@ -140,7 +144,7 @@ module ActiveRecord
         end
         
         def save_cached_tag_list
-          if caching_tag_list?
+          if self.class.caching_tag_list?
             self[self.class.cached_tag_list_column_name] = tag_list.to_s
           end
         end
@@ -158,16 +162,13 @@ module ActiveRecord
               tags << Tag.find_or_create_with_like_by_name(new_tag_name)
             end
           end
+          
           true
         end
-
+        
         def reload_with_tag_list(*args)
           @tag_list = nil
           reload_without_tag_list(*args)
-        end
-        
-        def caching_tag_list?
-          self.class.column_names.include?(self.class.cached_tag_list_column_name)
         end
       end
     end
