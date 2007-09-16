@@ -1,3 +1,7 @@
+[17 September 2007]
+
+* Fix clearing of cached tag list when all tags removed.
+
 [12 September 2007]
 
 * Make the TagList class inherit from Array.

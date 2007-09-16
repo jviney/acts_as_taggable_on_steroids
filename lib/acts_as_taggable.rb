@@ -140,7 +140,7 @@ module ActiveRecord
         end
         
         def save_cached_tag_list
-          if caching_tag_list? and !tag_list.blank?
+          if caching_tag_list?
             self[self.class.cached_tag_list_column_name] = tag_list.to_s
           end
         end

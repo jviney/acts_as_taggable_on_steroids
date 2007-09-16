@@ -253,6 +253,14 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equal 'None', posts(:jonathan_sky).cached_tag_list
     assert_equal 'None', posts(:jonathan_sky).reload.cached_tag_list
   end
+  
+  def test_clearing_cached_tag_list
+    # Generate the cached tag list
+    posts(:jonathan_sky).save!
+    
+    posts(:jonathan_sky).update_attributes!(:tag_list => "")
+    assert_equal "", posts(:jonathan_sky).cached_tag_list
+  end
 
   def test_basic_functionalty_with_sti
     special_post = SpecialPost.create!(:text => "Test", :tag_list => "Random")
