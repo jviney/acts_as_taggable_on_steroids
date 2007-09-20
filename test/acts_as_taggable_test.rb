@@ -43,7 +43,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equal Hash.new, Post.find_options_for_tagged_with([nil])
   end
   
-  def test_find_options_for_tagged_with_leavs_arguments_unchanged
+  def test_find_options_for_tagged_with_leaves_arguments_unchanged
     original_tags = photos(:jonathan_questioning_dog).tags.dup
     Photo.find_options_for_tagged_with(photos(:jonathan_questioning_dog).tags)
     assert_equal original_tags, photos(:jonathan_questioning_dog).tags
