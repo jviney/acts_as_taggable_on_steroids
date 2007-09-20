@@ -82,8 +82,8 @@ add a column named <tt>cached_tag_list</tt> to the model which is being tagged.
 
   class CachePostTagList < ActiveRecord::Migration
     def self.up
-      # You should make sure that the column is long enough to hold
-      # the full tag list. In some situations the :text type may be more appropriate.
+      # You should make sure that the column is long enough to hold the full tag list.
+      # The column must have a default value of null, not an empty string.
       add_column :posts, :cached_tag_list, :string
     end
   end

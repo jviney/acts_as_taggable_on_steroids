@@ -55,11 +55,11 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     
     options = Photo.find_options_for_tagged_with("Hello")
     
-    assert_no_match Regexp.new(" taggings "), options[:joins]
-    assert_no_match Regexp.new(" tags "), options[:joins]
+    assert_no_match(/ taggings /, options[:joins])
+    assert_no_match(/ tags /, options[:joins])
     
-    assert_match Regexp.new(" categorisations "), options[:joins]
-    assert_match Regexp.new(" categories "), options[:joins]
+    assert_match(/ categorisations /, options[:joins])
+    assert_match(/ categories /, options[:joins])
   ensure
     Tagging.table_name = "taggings"
     Tag.table_name = "tags"
