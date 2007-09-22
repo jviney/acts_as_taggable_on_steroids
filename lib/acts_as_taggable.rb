@@ -93,8 +93,8 @@ module ActiveRecord
           options.assert_valid_keys :start_at, :end_at, :conditions, :at_least, :at_most, :order, :limit
           
           scope = scope(:find)
-          start_at = sanitize_sql(["#{Tagging.table_name}.created_at >= ?", options[:start_at]]) if options[:start_at]
-          end_at = sanitize_sql(["#{Tagging.table_name}.created_at <= ?", options[:end_at]]) if options[:end_at]
+          start_at = sanitize_sql(["#{Tagging.table_name}.created_at >= ?", options.delete(:start_at)]) if options[:start_at]
+          end_at = sanitize_sql(["#{Tagging.table_name}.created_at <= ?", options.delete(:end_at)]) if options[:end_at]
           
           conditions = [
             "#{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)}",
@@ -108,8 +108,8 @@ module ActiveRecord
           joins << "LEFT OUTER JOIN #{table_name} ON #{table_name}.#{primary_key} = #{Tagging.table_name}.taggable_id"
           joins << scope[:joins] if scope && scope[:joins]
           
-          at_least  = sanitize_sql(['COUNT(*) >= ?', options[:at_least]]) if options[:at_least]
-          at_most   = sanitize_sql(['COUNT(*) <= ?', options[:at_most]]) if options[:at_most]
+          at_least  = sanitize_sql(['COUNT(*) >= ?', options.delete(:at_least)]) if options[:at_least]
+          at_most   = sanitize_sql(['COUNT(*) <= ?', options.delete(:at_most)]) if options[:at_most]
           having    = [at_least, at_most].compact.join(' AND ')
           group_by  = "#{Tag.table_name}.id, #{Tag.table_name}.name HAVING COUNT(*) > 0"
           group_by << " AND #{having}" unless having.blank?
@@ -117,10 +117,8 @@ module ActiveRecord
           { :select     => "#{Tag.table_name}.id, #{Tag.table_name}.name, COUNT(*) AS count", 
             :joins      => joins.join(" "),
             :conditions => conditions,
-            :group      => group_by,
-            :order      => options[:order],
-            :limit      => options[:limit]
-          }
+            :group      => group_by
+          }.update(options)
         end
         
         def caching_tag_list?
