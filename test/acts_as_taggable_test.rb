@@ -219,6 +219,10 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert !p.reload.tag_list.blank?
   end
   
+  def test_instance_tag_counts
+    assert_tag_counts posts(:jonathan_sky).tag_counts, :good => 4, :nature => 8
+  end
+  
   def test_tag_list_populated_when_cache_nil
     assert_nil posts(:jonathan_sky).cached_tag_list
     posts(:jonathan_sky).save!

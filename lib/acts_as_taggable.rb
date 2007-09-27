@@ -85,8 +85,8 @@ module ActiveRecord
         #  :order - A piece of SQL to order by. Eg 'tags.count desc' or 'taggings.created_at desc'
         #  :at_least - Exclude tags with a frequency less than the given value
         #  :at_most - Exclude tags with a frequency greater than the given value
-        def tag_counts(*args)
-          Tag.find(:all, find_options_for_tag_counts(*args))
+        def tag_counts(options = {})
+          Tag.find(:all, find_options_for_tag_counts(options))
         end
         
         def find_options_for_tag_counts(options = {})
@@ -163,6 +163,11 @@ module ActiveRecord
           
           true
         end
+	
+	# Get the tag counts
+	def tag_counts(options = {})
+	  self.class.tag_counts({ :conditions => ["#{Tag.table_name}.name IN (?)", tag_list] }.reverse_merge(options))
+	end
         
         def reload_with_tag_list(*args)
           @tag_list = nil

@@ -1,3 +1,7 @@
+[27 September 2007]
+
+* Add #tag_counts method to get tag counts for a specific object's tags.
+
 [17 September 2007]
 
 * Fix clearing of cached tag list when all tags removed.
