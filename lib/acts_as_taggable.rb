@@ -36,7 +36,12 @@ module ActiveRecord
         #   :exclude - Find models that are not tagged with the given tags
         #   :match_all - Find models that match all of the given tags, not just one
         #   :conditions - A piece of SQL conditions to add to the query
-        def find_options_for_tagged_with(tags, options = {})
+        def find_tagged_with(*args)
+          options = find_options_for_find_tagged_with(*args)
+          options.blank? ? [] : find(:all, options)
+        end
+        
+        def find_options_for_find_tagged_with(tags, options = {})
           tags = if tags.is_a?(String)
             TagList.from(tags)
           else
@@ -70,11 +75,6 @@ module ActiveRecord
             :conditions => conditions.join(" AND "),
             :group      => group
           }.update(options)
-        end
-        
-        def find_tagged_with(*args)
-          options = find_options_for_tagged_with(*args)
-          options.blank? ? [] : find(:all, options)
         end
         
         # Options:
@@ -128,10 +128,10 @@ module ActiveRecord
       
       module InstanceMethods
         def tag_list
-          if @tag_list
-            @tag_list
-          elsif self.class.caching_tag_list? and !send(self.class.cached_tag_list_column_name).nil?
-            @tag_list = TagList.from(send(self.class.cached_tag_list_column_name))
+          return @tag_list if @tag_list
+          
+          if self.class.caching_tag_list? and !(cached_value = send(self.class.cached_tag_list_column_name)).nil?
+            @tag_list = TagList.from(cached_value)
           else
             @tag_list = TagList.new(*tags.map(&:name))
           end
@@ -163,11 +163,10 @@ module ActiveRecord
           
           true
         end
-	
-	# Get the tag counts
-	def tag_counts(options = {})
-	  self.class.tag_counts({ :conditions => ["#{Tag.table_name}.name IN (?)", tag_list] }.reverse_merge(options))
-	end
+        
+        def tag_counts(options = {})
+          self.class.tag_counts({ :conditions => ["#{Tag.table_name}.name IN (?)", tag_list] }.reverse_merge(options))
+        end
         
         def reload_with_tag_list(*args)
           @tag_list = nil

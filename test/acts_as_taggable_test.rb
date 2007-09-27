@@ -38,22 +38,22 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equivalent [posts(:jonathan_grass), posts(:jonathan_rain)], Post.find_tagged_with("'Very good', Bad", :exclude => true)
   end
   
-  def test_find_options_for_tagged_with_no_tags_returns_empty_hash
-    assert_equal Hash.new, Post.find_options_for_tagged_with("")
-    assert_equal Hash.new, Post.find_options_for_tagged_with([nil])
+  def test_find_options_for_find_tagged_with_no_tags_returns_empty_hash
+    assert_equal Hash.new, Post.find_options_for_find_tagged_with("")
+    assert_equal Hash.new, Post.find_options_for_find_tagged_with([nil])
   end
   
-  def test_find_options_for_tagged_with_leaves_arguments_unchanged
+  def test_find_options_for_find_tagged_with_leaves_arguments_unchanged
     original_tags = photos(:jonathan_questioning_dog).tags.dup
-    Photo.find_options_for_tagged_with(photos(:jonathan_questioning_dog).tags)
+    Photo.find_options_for_find_tagged_with(photos(:jonathan_questioning_dog).tags)
     assert_equal original_tags, photos(:jonathan_questioning_dog).tags
   end
   
-  def test_find_options_for_tagged_with_respects_custom_table_name
+  def test_find_options_for_find_tagged_with_respects_custom_table_name
     Tagging.table_name = "categorisations"
     Tag.table_name = "categories"
     
-    options = Photo.find_options_for_tagged_with("Hello")
+    options = Photo.find_options_for_find_tagged_with("Hello")
     
     assert_no_match(/ taggings /, options[:joins])
     assert_no_match(/ tags /, options[:joins])
