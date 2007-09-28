@@ -4,17 +4,15 @@ begin
   require File.dirname(__FILE__) + '/../../../../config/environment'
 rescue LoadError
   require 'rubygems'
-  require_gem 'activerecord'
-  require_gem 'actionpack'
+  gem 'activerecord'
+  gem 'actionpack'
+  require 'active_record'
+  require 'action_controller'
 end
 
 # Search for fixtures first
 fixture_path = File.dirname(__FILE__) + '/fixtures/'
-begin
-  Dependencies.load_paths.insert(0, fixture_path)
-rescue
-  $LOAD_PATH.unshift(fixture_path)
-end
+Dependencies.load_paths.insert(0, fixture_path)
 
 require 'active_record/fixtures'
 
@@ -50,7 +48,8 @@ class Test::Unit::TestCase #:nodoc:
     
     tags.each do |tag|
       value = expected_values.delete(tag.name)
-      assert_not_nil value, "Expected count for #{tag.name} was not provided" if value.nil?
+      
+      assert_not_nil value, "Expected count for #{tag.name} was not provided"
       assert_equal value, tag.count, "Expected value of #{value} for #{tag.name}, but was #{tag.count}"
     end
     

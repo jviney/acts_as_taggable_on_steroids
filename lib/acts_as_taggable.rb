@@ -16,8 +16,7 @@ module ActiveRecord
           include ActiveRecord::Acts::Taggable::InstanceMethods
           extend ActiveRecord::Acts::Taggable::SingletonMethods
           
-          alias_method :reload_without_tag_list, :reload
-          alias_method :reload, :reload_with_tag_list
+          alias_method_chain :reload, :tag_list
         end
         
         def cached_tag_list_column_name
@@ -77,6 +76,8 @@ module ActiveRecord
           }.update(options)
         end
         
+        # Calculate the tag counts for all tags.
+        # 
         # Options:
         #  :start_at - Restrict the tags to those created after a certain time
         #  :end_at - Restrict the tags to those created before a certain time
@@ -164,8 +165,11 @@ module ActiveRecord
           true
         end
         
+        # Calculate the tag counts for the tags used by this model.
+        #
+        # The possible options are the same as the tag_counts class method, excluding :conditions.
         def tag_counts(options = {})
-          self.class.tag_counts({ :conditions => ["#{Tag.table_name}.name IN (?)", tag_list] }.reverse_merge(options))
+          self.class.tag_counts({ :conditions => ["#{Tag.table_name}.name IN (?)", tag_list] }.reverse_merge!(options))
         end
         
         def reload_with_tag_list(*args)
