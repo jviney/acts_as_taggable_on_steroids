@@ -75,6 +75,34 @@ an single user's posts? To achieve this we call tag_counts on the association:
 
   User.find(:first).posts.tag_counts
   
+A helper is included to assist with generating tag clouds. Include it in your helper file:
+
+  module ApplicationHelper
+    include TagsHelper
+  end
+
+Here is an example that generates a tag cloud.
+
+Controller:
+
+  class PostController < ApplicationController
+    def tag_cloud
+      @tags = Post.tag_counts
+    end
+  end
+  
+View:
+  <% tag_cloud @tags, %w(css1 css2 css3 css4) do |tag, css_class| %>
+    <%= link_to tag.name, { :action => :tag, :id => name }, :class => css_class %>
+  <% end %>
+  
+CSS:
+
+  .css1 { font-size: 1.0em; }
+  .css2 { font-size: 1.2em; }
+  .css3 { font-size: 1.4em; }
+  .css4 { font-size: 1.6em; }
+
 === Caching
 
 It is useful to cache the list of tags to reduce the number of queries executed. To do this,
