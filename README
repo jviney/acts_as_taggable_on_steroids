@@ -101,12 +101,11 @@ CSS:
 === Caching
 
 It is useful to cache the list of tags to reduce the number of queries executed. To do this,
-add a column named <tt>cached_tag_list</tt> to the model which is being tagged.
+add a column named <tt>cached_tag_list</tt> to the model which is being tagged. The column should be long enough to hold
+the full tag list and must have a default value of null, not an empty string.
 
   class CachePostTagList < ActiveRecord::Migration
     def self.up
-      # You should make sure that the column is long enough to hold the full tag list.
-      # The column must have a default value of null, not an empty string.
       add_column :posts, :cached_tag_list, :string
     end
   end
