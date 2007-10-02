@@ -1,3 +1,14 @@
+[20 September 2007]
+
+* Add :parse option to TagList#new and TagList#add.
+
+    tag_list = TagList.new("One, Two", :parse => true) # ["One", "Two"]
+    
+    tag_list # ["One", "Two"]
+    tag_list.add("Three, Four", :parse => true) # ["One", "Two", "Three", "Four"]
+    
+* Remove TagList#names.
+
 [29 September 2007]
 
 * Add TagsHelper to assist with generating tag clouds and provide a simple example.

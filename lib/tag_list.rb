@@ -2,26 +2,31 @@ class TagList < Array
   cattr_accessor :delimiter
   self.delimiter = ','
   
-  def initialize(*names)
-    add(*names)
+  def initialize(*args)
+    add(*args)
   end
   
-  def add(*names)
+  def add(*args)
+    options = args.last.is_a?(Hash) ? args.pop : {}
+    options.assert_valid_keys :parse
+    names = args
+    
+    if options[:parse]
+      names = names.map { |n| self.class.parse(n) }.flatten
+    end
+    
     # Strip whitespace and remove blank or duplicate tags
     names.reject!(&:blank?)
     names.map!(&:strip)
     
     concat(names)
     uniq!
-  end
-  
-  # Backwards compatibility
-  def names
     self
   end
   
   def remove(*names)
     delete_if { |name| names.include?(name) }
+    self
   end
   
   def to_s
