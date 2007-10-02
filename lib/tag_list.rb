@@ -33,6 +33,11 @@ class TagList < Array
     self
   end
   
+  # Transform the tag_list into a tag string suitable for edting in a form.
+  # The tags are joined with <tt>TagList.delimiter</tt> and quoted if necessary.
+  #
+  #   tag_list = TagList.new("Round", "Square,Cube")
+  #   tag_list.to_s # 'Round, "Square,Cube"'
   def to_s
     clean!
     
@@ -42,7 +47,7 @@ class TagList < Array
   end
   
  private
-  # Remove whitespace from around tags, duplicate tags, and blank tags.
+  # Remove whitespace, duplicates, and blanks.
   def clean!
     reject!(&:blank?)
     map!(&:strip)
