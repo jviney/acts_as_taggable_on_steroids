@@ -11,9 +11,6 @@ If you find this plugin useful, please consider a donation to show your support!
 This plugin is based on acts_as_taggable by DHH but includes extras
 such as tests, smarter tag assignment, and tag cloud calculations.
 
-Thanks to www.fanacious.com for allowing this plugin to be released. Please check out
-their site to show your support.
-
 == Resources
 
 Install
@@ -138,7 +135,3 @@ For example, to use spaces instead of commas, add the following to config/enviro
 === Other
 
 Problems, comments, and suggestions all welcome. jonathan.viney@gmail.com  
-  
-== Credits
-
-www.fanacious.com
