@@ -1,5 +1,7 @@
 [2 October 2007]
 
+* Remove TagList.parse, use TagList.from instead.
+
 * Add :parse option to TagList#new and TagList#add.
 
     tag_list = TagList.new("One, Two", :parse => true) # ["One", "Two"]

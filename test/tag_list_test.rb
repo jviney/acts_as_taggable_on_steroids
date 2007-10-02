@@ -1,10 +1,10 @@
 require File.dirname(__FILE__) + '/abstract_unit'
 
 class TagListTest < Test::Unit::TestCase
-  def test_parse_leaves_string_unchanged
+  def test_from_leaves_string_unchanged
     tags = '"One  ", Two'
     original = tags.dup
-    TagList.parse(tags)
+    TagList.from(tags)
     assert_equal tags, original
   end
   
@@ -90,5 +90,10 @@ class TagListTest < Test::Unit::TestCase
   
   def test_add_with_parsing
     assert_equal %w(One Two), TagList.new.add("One, Two", :parse => true)
+  end
+  
+  def test_remove_with_parsing
+    tag_list = TagList.from("Three, Four, Five")
+    assert_equal %w(Four), tag_list.remove("Three, Five", :parse => true)
   end
 end

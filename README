@@ -27,10 +27,8 @@ Generate and apply the migration:
 
 === Basic tagging
 
-Using the examples from the tests, let's suppose we have users that have many posts and we want those
-posts to be able to be tagged by the user.
-
-As usual, we add +acts_as_taggable+ to the Post class:
+Let's suppose we have users that have many posts and we want those posts to be able to be tagged by the user.
+The first step is to add +acts_as_taggable+ to the Post class:
 
   class Post < ActiveRecord::Base
     acts_as_taggable
@@ -38,14 +36,14 @@ As usual, we add +acts_as_taggable+ to the Post class:
     belongs_to :user
   end
   
-We can now use the tagging methods provided by acts_as_taggable, <tt>tag_list</tt> and <tt>tag_list=</tt>. Both these
+We can now use the tagging methods provided by acts_as_taggable, <tt>#tag_list</tt> and <tt>#tag_list=</tt>. Both these
 methods work like regular attribute accessors.
 
   p = Post.find(:first)
-  p.tag_list # ""
+  p.tag_list # []
   p.tag_list = "Funny, Silly"
   p.save
-  p.tag_list # "Funny, Silly"
+  p.tag_list # ["Funny", "Silly"]
   
 You can also add or remove arrays of tags.
 
