@@ -8,7 +8,7 @@
 
 * Remove TagList.parse, use TagList.from instead.
 
-* Add :parse option to TagList#new and TagList#add.
+* Add :parse option to TagList#new, TagList#add, and TagList#remove.
 
     tag_list = TagList.new("One, Two", :parse => true) # ["One", "Two"]
     
@@ -34,13 +34,6 @@
 [12 September 2007]
 
 * Make the TagList class inherit from Array.
-
-  BACKWARDS INCOMPATIBILITY:
-  
-    TagList#initialize, TagList#add, and TagList#remove no longer accept array arguments.
-    
-    Old: TagList.new(["One", "Two"])
-    New: TagList.new("One", "Two")
 
 * Deprecate obsolete TagList#names.
 

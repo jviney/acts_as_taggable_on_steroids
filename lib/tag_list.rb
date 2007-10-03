@@ -59,8 +59,10 @@ class TagList < Array
     options.assert_valid_keys :parse
     
     if options[:parse]
-      args.map! { |a| self.class.from(a) }.flatten!
+      args.map! { |a| self.class.from(a) }
     end
+    
+    args.flatten!
   end
   
   class << self
@@ -76,7 +78,7 @@ class TagList < Array
         string.gsub!(/"(.*?)"\s*#{delimiter}?\s*/) { tag_list << $1; "" }
         string.gsub!(/'(.*?)'\s*#{delimiter}?\s*/) { tag_list << $1; "" }
         
-        tag_list.add(*string.split(delimiter))
+        tag_list.add(string.split(delimiter))
       end
     end
   end

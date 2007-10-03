@@ -41,7 +41,7 @@ module ActiveRecord #:nodoc:
         end
         
         def find_options_for_find_tagged_with(tags, options = {})
-          tags = tags.is_a?(Array) ? TagList.new(*tags.map(&:to_s)) : TagList.from(tags)
+          tags = tags.is_a?(Array) ? TagList.new(tags.map(&:to_s)) : TagList.from(tags)
           
           return {} if tags.empty?
           

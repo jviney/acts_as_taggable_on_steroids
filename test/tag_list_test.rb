@@ -77,11 +77,13 @@ class TagListTest < Test::Unit::TestCase
     assert_equal %w(One), tag_list
     
     assert_equal %w(One Two), tag_list.add("Two")
+    assert_equal %w(One Two Three), tag_list.add(["Three"])
   end
   
   def test_remove
     tag_list = TagList.new("One", "Two")
     assert_equal %w(Two), tag_list.remove("One")
+    assert_equal %w(), tag_list.remove(["Two"])
   end
   
   def test_new_with_parsing
