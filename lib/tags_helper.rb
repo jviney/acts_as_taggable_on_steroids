@@ -1,4 +1,5 @@
 module TagsHelper
+  # See the README for an example using tag_cloud.
   def tag_cloud(tags, classes)
     max_count = tags.sort_by(&:count).last.count.to_f
     

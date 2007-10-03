@@ -1,4 +1,4 @@
-module ActiveRecord
+module ActiveRecord #:nodoc:
   module Acts #:nodoc:
     module Taggable #:nodoc:
       def self.included(base)
@@ -6,7 +6,7 @@ module ActiveRecord
       end
       
       module ClassMethods
-        def acts_as_taggable(options = {})
+        def acts_as_taggable
           has_many :taggings, :as => :taggable, :dependent => :destroy, :include => :tag
           has_many :tags, :through => :taggings
           
@@ -172,7 +172,7 @@ module ActiveRecord
           self.class.tag_counts({ :conditions => ["#{Tag.table_name}.name IN (?)", tag_list] }.reverse_merge!(options))
         end
         
-        def reload_with_tag_list(*args)
+        def reload_with_tag_list(*args) #:nodoc:
           @tag_list = nil
           reload_without_tag_list(*args)
         end

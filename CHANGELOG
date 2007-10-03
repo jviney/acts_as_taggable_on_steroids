@@ -1,3 +1,9 @@
+[3 October 2007]
+
+# Improve documentation.
+
+* Fix TagsHelper and test.
+
 [2 October 2007]
 
 * Remove TagList.parse, use TagList.from instead.

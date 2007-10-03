@@ -1,2 +1,3 @@
-module TagCountsExtension
+# Deprecated
+module TagCountsExtension #:nodoc:
 end

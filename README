@@ -11,10 +11,9 @@ If you find this plugin useful, please consider a donation to show your support!
 This plugin is based on acts_as_taggable by DHH but includes extras
 such as tests, smarter tag assignment, and tag cloud calculations.
 
-== Resources
+== Installation
 
-Install
-  * script/plugin install http://svn.viney.net.nz/things/rails/plugins/acts_as_taggable_on_steroids
+  ruby script/plugin install http://svn.viney.net.nz/things/rails/plugins/acts_as_taggable_on_steroids
 
 == Usage
 
@@ -27,7 +26,7 @@ Generate and apply the migration:
 
 === Basic tagging
 
-Let's suppose we have users that have many posts and we want those posts to be able to be tagged by the user.
+Let's suppose users have many posts and we want those posts to have tags.
 The first step is to add +acts_as_taggable+ to the Post class:
 
   class Post < ActiveRecord::Base
@@ -60,6 +59,8 @@ By default, find_tagged_with will find objects that have any of the given tags. 
 find only objects that are tagged with all the given tags, use match_all.
 
   Post.find_tagged_with('Funny, Silly', :match_all => true)
+  
+See <tt>ActiveRecord::Acts::Taggable::InstanceMethods</tt> for more methods and options.
 
 === Tag cloud calculations
 
