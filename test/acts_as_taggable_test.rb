@@ -35,7 +35,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   
   def test_find_tagged_with_exclusions
     assert_equivalent [photos(:jonathan_questioning_dog), photos(:jonathan_bad_cat)], Photo.find_tagged_with("Nature", :exclude => true)
-    assert_equivalent [posts(:jonathan_grass), posts(:jonathan_rain)], Post.find_tagged_with("'Very good', Bad", :exclude => true)
+    assert_equivalent [posts(:jonathan_grass), posts(:jonathan_rain), posts(:jonathan_cloudy), posts(:jonathan_still_cloudy)], Post.find_tagged_with("'Very good', Bad", :exclude => true)
   end
   
   def test_find_options_for_find_tagged_with_no_tags_returns_empty_hash
@@ -73,16 +73,16 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   end
   
   def test_basic_tag_counts_on_class
-    assert_tag_counts Post.tag_counts, :good => 2, :nature => 5, :question => 1, :bad => 1
+    assert_tag_counts Post.tag_counts, :good => 2, :nature => 7, :question => 1, :bad => 1
     assert_tag_counts Photo.tag_counts, :good => 1, :nature => 3, :question => 1, :bad => 1, :animal => 3
   end
   
   def test_tag_counts_on_class_with_date_conditions
-    assert_tag_counts Post.tag_counts(:start_at => Date.new(2006, 8, 4)), :good => 1, :nature => 3, :question => 1, :bad => 1
+    assert_tag_counts Post.tag_counts(:start_at => Date.new(2006, 8, 4)), :good => 1, :nature => 5, :question => 1, :bad => 1
     assert_tag_counts Post.tag_counts(:end_at => Date.new(2006, 8, 6)), :good => 1, :nature => 4, :question => 1
-    assert_tag_counts Post.tag_counts(:start_at => Date.new(2006, 8, 5), :end_at => Date.new(2006, 8, 8)), :good => 1, :nature => 2, :bad => 1
+    assert_tag_counts Post.tag_counts(:start_at => Date.new(2006, 8, 5), :end_at => Date.new(2006, 8, 10)), :good => 1, :nature => 4, :bad => 1
     
-    assert_tag_counts Photo.tag_counts(:start_at => Date.new(2006, 8, 12), :end_at => Date.new(2006, 8, 17)), :good => 1, :nature => 1, :bad => 1, :question => 1, :animal => 2
+    assert_tag_counts Photo.tag_counts(:start_at => Date.new(2006, 8, 12), :end_at => Date.new(2006, 8, 19)), :good => 1, :nature => 2, :bad => 1, :question => 1, :animal => 3
   end
   
   def test_tag_counts_on_class_with_frequencies
@@ -100,7 +100,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   end
   
   def test_tag_counts_on_association
-    assert_tag_counts users(:jonathan).posts.tag_counts, :good => 1, :nature => 3, :question => 1
+    assert_tag_counts users(:jonathan).posts.tag_counts, :good => 1, :nature => 5, :question => 1
     assert_tag_counts users(:sam).posts.tag_counts, :good => 1, :nature => 2, :bad => 1
     
     assert_tag_counts users(:jonathan).photos.tag_counts, :animal => 3, :nature => 1, :question => 1, :bad => 1
@@ -220,7 +220,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   end
   
   def test_instance_tag_counts
-    assert_tag_counts posts(:jonathan_sky).tag_counts, :good => 4, :nature => 8
+    assert_tag_counts posts(:jonathan_sky).tag_counts, :good => 4, :nature => 10
   end
   
   def test_tag_list_populated_when_cache_nil

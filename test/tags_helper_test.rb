@@ -13,7 +13,7 @@ class TagsHelperTest < Test::Unit::TestCase
     end
     
     assert_equal [
-      [tags(:good), "css1"],
+      [tags(:good), "css2"],
       [tags(:bad), "css1"],
       [tags(:nature), "css4"],
       [tags(:question), "css1"]

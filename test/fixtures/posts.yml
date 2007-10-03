@@ -13,12 +13,22 @@ jonathan_rain:
   user_id: 1
   text: Why does the rain fall?
   
-sam_ground:
+jonathan_cloudy:
   id: 4
+  user_id: 1
+  text: Is it cloudy?
+
+jonathan_still_cloudy:
+  id: 5
+  user_id: 1
+  text: Is it still cloudy?
+
+sam_ground:
+  id: 6
   user_id: 2
   text: The ground is looking too brown
   
 sam_flowers:
-  id: 5
+  id: 7
   user_id: 2
   text: Why are the flowers dead?

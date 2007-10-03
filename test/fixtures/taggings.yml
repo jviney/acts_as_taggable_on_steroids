@@ -33,98 +33,112 @@ jonathan_rain_nature:
   taggable_id: 3
   taggable_type: Post
   created_at: 2006-08-05
-
-sam_ground_nature:
+  
+jonathan_cloudy_nature:
   id: 6
   tag_id: 3
   taggable_id: 4
   taggable_type: Post
   created_at: 2006-08-06
   
-sam_ground_bad:
+jonathan_still_cloudy_nature:
   id: 7
-  tag_id: 2
-  taggable_id: 4
+  tag_id: 3
+  taggable_id: 5
   taggable_type: Post
   created_at: 2006-08-07
-  
-sam_flowers_good:
+
+sam_ground_nature:
   id: 8
-  tag_id: 1
-  taggable_id: 5
+  tag_id: 3
+  taggable_id: 6
   taggable_type: Post
   created_at: 2006-08-08
   
-sam_flowers_nature:
+sam_ground_bad:
   id: 9
-  tag_id: 3
-  taggable_id: 5
+  tag_id: 2
+  taggable_id: 6
   taggable_type: Post
   created_at: 2006-08-09
   
-# Photos
-jonathan_dog_animal:
+sam_flowers_good:
   id: 10
-  tag_id: 5
-  taggable_id: 1
-  taggable_type: Photo
+  tag_id: 1
+  taggable_id: 7
+  taggable_type: Post
   created_at: 2006-08-10
   
-jonathan_dog_nature:
+sam_flowers_nature:
   id: 11
   tag_id: 3
-  taggable_id: 1
-  taggable_type: Photo
+  taggable_id: 7
+  taggable_type: Post
   created_at: 2006-08-11
   
-jonathan_questioning_dog_animal:
+# Photos
+jonathan_dog_animal:
   id: 12
   tag_id: 5
-  taggable_id: 2
+  taggable_id: 1
   taggable_type: Photo
   created_at: 2006-08-12
   
-jonathan_questioning_dog_question:
+jonathan_dog_nature:
   id: 13
-  tag_id: 4
-  taggable_id: 2
+  tag_id: 3
+  taggable_id: 1
   taggable_type: Photo
   created_at: 2006-08-13
   
-jonathan_bad_cat_bad:
+jonathan_questioning_dog_animal:
   id: 14
-  tag_id: 2
-  taggable_id: 3
+  tag_id: 5
+  taggable_id: 2
   taggable_type: Photo
   created_at: 2006-08-14
   
-jonathan_bad_cat_animal:
+jonathan_questioning_dog_question:
   id: 15
-  tag_id: 5
-  taggable_id: 3
+  tag_id: 4
+  taggable_id: 2
   taggable_type: Photo
   created_at: 2006-08-15
   
-sam_flower_nature:
+jonathan_bad_cat_bad:
   id: 16
-  tag_id: 3
-  taggable_id: 4
+  tag_id: 2
+  taggable_id: 3
   taggable_type: Photo
   created_at: 2006-08-16
   
-sam_flower_good:
+jonathan_bad_cat_animal:
   id: 17
-  tag_id: 1
-  taggable_id: 4
+  tag_id: 5
+  taggable_id: 3
   taggable_type: Photo
   created_at: 2006-08-17
   
-sam_sky_nature:
+sam_flower_nature:
   id: 18
+  tag_id: 3
+  taggable_id: 4
+  taggable_type: Photo
+  created_at: 2006-08-18
+  
+sam_flower_good:
+  id: 19
+  tag_id: 1
+  taggable_id: 4
+  taggable_type: Photo
+  created_at: 2006-08-19
+  
+sam_sky_nature:
+  id: 20
   tag_id: 3
   taggable_id: 5
   taggable_type: Photo
-  created_at: 2006-08-18
+  created_at: 2006-08-20
 
 # Magazines
 ruby_good:

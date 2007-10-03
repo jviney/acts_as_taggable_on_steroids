@@ -1,10 +1,9 @@
 module TagsHelper
   def tag_cloud(tags, classes)
-    sorted_tags = tags.sort_by(&:count)
-    min, max = sorted_tags.first.count, sorted_tags.last.count
+    max_count = tags.sort_by(&:count).last.count.to_f
     
     tags.each do |tag|
-      index = ((tag.count / max) * (classes.size - 1)).round
+      index = ((tag.count / max_count) * (classes.size - 1)).round
       yield tag, classes[index]
     end
   end
