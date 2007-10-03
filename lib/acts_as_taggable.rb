@@ -41,14 +41,7 @@ module ActiveRecord #:nodoc:
         end
         
         def find_options_for_find_tagged_with(tags, options = {})
-          tags = if tags.is_a?(String)
-            TagList.from(tags)
-          else
-            tags.dup
-          end
-          
-          tags.compact!
-          tags.map!(&:to_s)
+          tags = tags.is_a?(Array) ? TagList.new(*tags.map(&:to_s)) : TagList.from(tags)
           
           return {} if tags.empty?
           
