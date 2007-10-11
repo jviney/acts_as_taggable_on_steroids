@@ -1,6 +1,10 @@
+[11 October 2007]
+
+* Make tag_counts work correctly with STI.
+
 [3 October 2007]
 
-# Improve documentation.
+* Improve documentation.
 
 * Fix TagsHelper and test.
 

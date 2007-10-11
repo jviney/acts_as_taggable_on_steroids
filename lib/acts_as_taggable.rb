@@ -96,7 +96,11 @@ module ActiveRecord #:nodoc:
             scope && scope[:conditions],
             start_at,
             end_at
-          ].compact.join(' AND ')
+          ]
+          
+          conditions << type_condition unless descends_from_active_record? 
+          conditions.compact!
+          conditions = conditions.join(' AND ')
           
           joins = ["LEFT OUTER JOIN #{Tagging.table_name} ON #{Tag.table_name}.id = #{Tagging.table_name}.tag_id"]
           joins << "LEFT OUTER JOIN #{table_name} ON #{table_name}.#{primary_key} = #{Tagging.table_name}.taggable_id"
