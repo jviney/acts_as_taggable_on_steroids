@@ -2,6 +2,8 @@
 
 * Make find_tagged_with correctly apply :conditions
 
+* Add Tag.destroy_unused option.
+
 [11 October 2007]
 
 * Make tag_counts work correctly with STI.

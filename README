@@ -130,6 +130,13 @@ For example, to use spaces instead of commas, add the following to config/enviro
 
   TagList.delimiter = " "
 
+=== Unused tags
+
+Set Tag.destroy_unused to remove tags when they are no longer being
+used to tag any objects. Defaults to false.
+
+  Tag.destroy_unused = true
+
 === Other
 
 Problems, comments, and suggestions all welcome. jonathan.viney@gmail.com  

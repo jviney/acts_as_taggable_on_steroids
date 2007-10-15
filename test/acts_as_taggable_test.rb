@@ -291,6 +291,30 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     
     assert_equal Post.find_tagged_with("Nature"), Post.find_tagged_with("nature")
   end
+  
+  def test_tag_not_destroyed_when_unused
+    posts(:jonathan_sky).tag_list.add("Random")
+    posts(:jonathan_sky).save!
+  
+    assert_no_difference 'Tag.count' do
+      posts(:jonathan_sky).tag_list.remove("Random")
+      posts(:jonathan_sky).save!
+    end
+  end
+  
+  def test_tag_destroyed_when_unused
+    Tag.destroy_unused = true
+    
+    posts(:jonathan_sky).tag_list.add("Random")
+    posts(:jonathan_sky).save!
+    
+    assert_difference 'Tag.count', -1 do
+      posts(:jonathan_sky).tag_list.remove("Random")
+      posts(:jonathan_sky).save!
+    end
+  ensure
+    Tag.destroy_unused = false
+  end
 end
 
 class ActsAsTaggableOnSteroidsFormTest < Test::Unit::TestCase
