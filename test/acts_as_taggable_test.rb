@@ -33,6 +33,10 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equivalent [posts(:jonathan_sky), posts(:sam_flowers)], Post.find_tagged_with(['Very good', 'Nature'], :match_all => true)
   end
   
+  def test_find_tagged_with_conditions
+    assert_equal [], Post.find_tagged_with('"Very good", Nature', :conditions => '1=0')
+  end
+  
   def test_find_tagged_with_exclusions
     assert_equivalent [photos(:jonathan_questioning_dog), photos(:jonathan_bad_cat)], Photo.find_tagged_with("Nature", :exclude => true)
     assert_equivalent [posts(:jonathan_grass), posts(:jonathan_rain), posts(:jonathan_cloudy), posts(:jonathan_still_cloudy)], Post.find_tagged_with("'Very good', Bad", :exclude => true)
