@@ -54,18 +54,23 @@ module ActiveRecord #:nodoc:
             tags_conditions = tags.map { |t| sanitize_sql(["#{Tag.table_name}.name LIKE ?", t]) }.join(" OR ")
             conditions << sanitize_sql(["#{table_name}.id NOT IN (SELECT #{Tagging.table_name}.taggable_id FROM #{Tagging.table_name} LEFT OUTER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id WHERE (#{tags_conditions}) AND #{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)})", tags])
           else
-            conditions << "(" + tags.map { |t| sanitize_sql(["#{tags_alias}.name LIKE ?", t]) }.join(" OR ") + ")"
-            
             if options.delete(:match_all)
-              group = "#{taggings_alias}.taggable_id HAVING COUNT(#{taggings_alias}.taggable_id) = #{tags.size}"
+              conditions << <<-END
+                (SELECT COUNT(*) FROM #{Tagging.table_name}
+                  LEFT OUTER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id
+                WHERE #{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)} AND
+                  taggable_id = #{table_name}.id AND
+                  (#{tags.map { |t| sanitize_sql(["#{Tag.table_name}.name LIKE ?", t]) }.join(" OR ")})) = #{tags.size}
+              END
+            else
+              conditions << "(" + tags.map { |t| sanitize_sql(["#{tags_alias}.name LIKE ?", t]) }.join(" OR ") + ")"
             end
           end
           
           { :select => "DISTINCT #{table_name}.*",
             :joins => "LEFT OUTER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = #{quote_value(base_class.name)} " +
                       "LEFT OUTER JOIN #{Tag.table_name} #{tags_alias} ON #{tags_alias}.id = #{taggings_alias}.tag_id",
-            :conditions => conditions.join(" AND "),
-            :group      => group
+            :conditions => conditions.join(" AND ")
           }.update(options)
         end
         

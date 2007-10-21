@@ -1,3 +1,7 @@
+[22 October 2007]
+
+* Fix find_tagged_with using :match_all and :include.
+
 [15 October 2007]
 
 * Make find_tagged_with correctly apply :conditions

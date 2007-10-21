@@ -28,9 +28,12 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equal [], Photo.find_tagged_with([Tag.new(:name => 'unsaved tag')])
   end
   
-  def test_find_tagged_with_matching_all_tags
+  def test_find_tagged_with_match_all
     assert_equivalent [photos(:jonathan_dog)], Photo.find_tagged_with('Crazy animal, "Nature"', :match_all => true)
-    assert_equivalent [posts(:jonathan_sky), posts(:sam_flowers)], Post.find_tagged_with(['Very good', 'Nature'], :match_all => true)
+  end
+  
+  def test_find_tagged_with_match_all_and_include
+    assert_equivalent [posts(:jonathan_sky), posts(:sam_flowers)], Post.find_tagged_with(['Very good', 'Nature'], :match_all => true, :include => :tags)
   end
   
   def test_find_tagged_with_conditions
