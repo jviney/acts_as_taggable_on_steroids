@@ -1,3 +1,7 @@
+[23 October 2007]
+
+* Fix tag_cloud when no tags are present.
+
 [22 October 2007]
 
 * Fix find_tagged_with using :match_all and :include.
