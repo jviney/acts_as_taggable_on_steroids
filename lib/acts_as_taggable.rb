@@ -51,25 +51,29 @@ module ActiveRecord #:nodoc:
           taggings_alias, tags_alias = "#{table_name}_taggings", "#{table_name}_tags"
           
           if options.delete(:exclude)
-            tags_conditions = tags.map { |t| sanitize_sql(["#{Tag.table_name}.name LIKE ?", t]) }.join(" OR ")
-            conditions << sanitize_sql(["#{table_name}.id NOT IN (SELECT #{Tagging.table_name}.taggable_id FROM #{Tagging.table_name} LEFT OUTER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id WHERE (#{tags_conditions}) AND #{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)})", tags])
+            conditions << <<-END
+              #{table_name}.id NOT IN
+                (SELECT #{Tagging.table_name}.taggable_id FROM #{Tagging.table_name}
+                 INNER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id
+                 WHERE #{tags_condition(tags)} AND #{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)})
+            END
           else
             if options.delete(:match_all)
               conditions << <<-END
                 (SELECT COUNT(*) FROM #{Tagging.table_name}
-                  LEFT OUTER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id
-                WHERE #{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)} AND
-                  taggable_id = #{table_name}.id AND
-                  (#{tags.map { |t| sanitize_sql(["#{Tag.table_name}.name LIKE ?", t]) }.join(" OR ")})) = #{tags.size}
+                 INNER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id
+                 WHERE #{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)} AND
+                 taggable_id = #{table_name}.id AND
+                 #{tags_condition(tags)}) = #{tags.size}
               END
             else
-              conditions << "(" + tags.map { |t| sanitize_sql(["#{tags_alias}.name LIKE ?", t]) }.join(" OR ") + ")"
+              conditions << tags_condition(tags, tags_alias)
             end
           end
           
           { :select => "DISTINCT #{table_name}.*",
-            :joins => "LEFT OUTER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = #{quote_value(base_class.name)} " +
-                      "LEFT OUTER JOIN #{Tag.table_name} #{tags_alias} ON #{tags_alias}.id = #{taggings_alias}.tag_id",
+            :joins => "INNER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = #{quote_value(base_class.name)} " +
+                      "INNER JOIN #{Tag.table_name} #{tags_alias} ON #{tags_alias}.id = #{taggings_alias}.tag_id",
             :conditions => conditions.join(" AND ")
           }.update(options)
         end
@@ -107,8 +111,8 @@ module ActiveRecord #:nodoc:
           conditions.compact!
           conditions = conditions.join(' AND ')
           
-          joins = ["LEFT OUTER JOIN #{Tagging.table_name} ON #{Tag.table_name}.id = #{Tagging.table_name}.tag_id"]
-          joins << "LEFT OUTER JOIN #{table_name} ON #{table_name}.#{primary_key} = #{Tagging.table_name}.taggable_id"
+          joins = ["INNER JOIN #{Tagging.table_name} ON #{Tag.table_name}.id = #{Tagging.table_name}.tag_id"]
+          joins << "INNER JOIN #{table_name} ON #{table_name}.#{primary_key} = #{Tagging.table_name}.taggable_id"
           joins << scope[:joins] if scope && scope[:joins]
           
           at_least  = sanitize_sql(['COUNT(*) >= ?', options.delete(:at_least)]) if options[:at_least]
@@ -126,6 +130,12 @@ module ActiveRecord #:nodoc:
         
         def caching_tag_list?
           column_names.include?(cached_tag_list_column_name)
+        end
+        
+       private
+        def tags_condition(tags, table_name = Tag.table_name)
+          condition = tags.map { |t| sanitize_sql(["#{table_name}.name LIKE ?", t]) }.join(" OR ")
+          "(" + condition + ")"
         end
       end
       

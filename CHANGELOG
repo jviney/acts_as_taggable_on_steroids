@@ -2,6 +2,8 @@
 
 * Fix find_tagged_with using :match_all and :include.
 
+* Use inner joins instead of left outer joins.
+
 [15 October 2007]
 
 * Make find_tagged_with correctly apply :conditions
