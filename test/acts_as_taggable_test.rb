@@ -40,6 +40,11 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equal [], Post.find_tagged_with('"Very good", Nature', :conditions => '1=0')
   end
   
+  def test_find_tagged_with_duplicates_options_hash
+    options = { :conditions => '1=1' }.freeze
+    assert_nothing_raised { Post.find_tagged_with("Nature", options) }
+  end
+  
   def test_find_tagged_with_exclusions
     assert_equivalent [photos(:jonathan_questioning_dog), photos(:jonathan_bad_cat)], Photo.find_tagged_with("Nature", :exclude => true)
     assert_equivalent [posts(:jonathan_grass), posts(:jonathan_rain), posts(:jonathan_cloudy), posts(:jonathan_still_cloudy)], Post.find_tagged_with("'Very good', Bad", :exclude => true)
@@ -95,6 +100,15 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   def test_tag_counts_on_class_with_frequencies
     assert_tag_counts Photo.tag_counts(:at_least => 2), :nature => 3, :animal => 3
     assert_tag_counts Photo.tag_counts(:at_most => 2), :good => 1, :question => 1, :bad => 1
+  end
+  
+  def test_tag_counts_on_class_with_frequencies_and_conditions
+    assert_tag_counts Photo.tag_counts(:at_least => 2, :conditions => '1=1'), :nature => 3, :animal => 3
+  end
+  
+  def test_tag_counts_duplicates_options_hash
+    options = { :at_least => 2, :conditions => '1=1' }.freeze
+    assert_nothing_raised { Photo.tag_counts(options) }
   end
   
   def test_tag_counts_with_limit
@@ -227,7 +241,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   end
   
   def test_instance_tag_counts
-    assert_tag_counts posts(:jonathan_sky).tag_counts, :good => 4, :nature => 10
+    assert_tag_counts posts(:jonathan_sky).tag_counts, :good => 2, :nature => 7
   end
   
   def test_tag_list_populated_when_cache_nil

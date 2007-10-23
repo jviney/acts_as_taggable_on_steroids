@@ -42,6 +42,7 @@ module ActiveRecord #:nodoc:
         
         def find_options_for_find_tagged_with(tags, options = {})
           tags = tags.is_a?(Array) ? TagList.new(tags.map(&:to_s)) : TagList.from(tags)
+          options = options.dup
           
           return {} if tags.empty?
           
@@ -75,7 +76,7 @@ module ActiveRecord #:nodoc:
             :joins => "INNER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = #{quote_value(base_class.name)} " +
                       "INNER JOIN #{Tag.table_name} #{tags_alias} ON #{tags_alias}.id = #{taggings_alias}.tag_id",
             :conditions => conditions.join(" AND ")
-          }.update(options)
+          }.reverse_merge!(options)
         end
         
         # Calculate the tag counts for all tags.
@@ -94,6 +95,7 @@ module ActiveRecord #:nodoc:
         
         def find_options_for_tag_counts(options = {})
           options.assert_valid_keys :start_at, :end_at, :conditions, :at_least, :at_most, :order, :limit
+          options = options.dup
           
           scope = scope(:find)
           start_at = sanitize_sql(["#{Tagging.table_name}.created_at >= ?", options.delete(:start_at)]) if options[:start_at]
@@ -101,7 +103,7 @@ module ActiveRecord #:nodoc:
           
           conditions = [
             "#{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)}",
-            options[:conditions],
+            options.delete(:conditions),
             scope && scope[:conditions],
             start_at,
             end_at
@@ -125,7 +127,7 @@ module ActiveRecord #:nodoc:
             :joins      => joins.join(" "),
             :conditions => conditions,
             :group      => group_by
-          }.update(options)
+          }.reverse_merge!(options)
         end
         
         def caching_tag_list?
@@ -181,7 +183,7 @@ module ActiveRecord #:nodoc:
         #
         # The possible options are the same as the tag_counts class method, excluding :conditions.
         def tag_counts(options = {})
-          self.class.tag_counts({ :conditions => ["#{Tag.table_name}.name IN (?)", tag_list] }.reverse_merge!(options))
+          self.class.tag_counts({ :conditions => self.class.send(:tags_condition, tag_list) }.reverse_merge!(options))
         end
         
         def reload_with_tag_list(*args) #:nodoc:

@@ -1,5 +1,9 @@
 [23 October 2007]
 
+* Make find_options_for_tag_counts and find_options_for_tagged_with dup their options.
+
+* Apply conditions properly in find_options_for_tag_counts.
+
 * Fix tag_cloud when no tags are present.
 
 [22 October 2007]
