@@ -1,3 +1,7 @@
+[30 Jan 08]
+
+* Fix Tag.destroy_unused on Rails 2.0.
+
 [23 October 2007]
 
 * Make find_options_for_tag_counts and find_options_for_tagged_with dup their options.

@@ -169,7 +169,10 @@ module ActiveRecord #:nodoc:
           old_tags = tags.reject { |tag| @tag_list.include?(tag.name) }
           
           self.class.transaction do
-            tags.delete(*old_tags) if old_tags.any?
+            if old_tags.any?
+              taggings.find(:all, :conditions => ["tag_id IN (?)", old_tags.map(&:id)]).each(&:destroy)
+              taggings.reset
+            end
             
             new_tag_names.each do |new_tag_name|
               tags << Tag.find_or_create_with_like_by_name(new_tag_name)
