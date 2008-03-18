@@ -2,7 +2,24 @@ require File.dirname(__FILE__) + '/abstract_unit'
 
 class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   fixtures :tags, :taggings, :posts, :users, :photos, :subscriptions, :magazines
+
+  def test_find_related_tags_with
+    assert_equivalent [tags(:good), tags(:bad), tags(:question)], Post.find_related_tags("nature")
+    assert_equivalent [tags(:nature)], Post.find_related_tags([tags(:good)])
+    assert_equivalent [tags(:bad), tags(:question)], Post.find_related_tags(["Very Good", "Nature"])        
+    assert_equivalent [tags(:bad), tags(:question)], Post.find_related_tags([tags(:good), tags(:nature)])
+  end
   
+  def test_find_related_tags_with_non_existent_tags
+    assert_equal [], Post.find_related_tags("ABCDEFG")
+    assert_equal [], Post.find_related_tags(['HIJKLM'])
+  end
+  
+  def test_find_related_tags_with_nothing
+    assert_equal [], Post.find_related_tags("")
+    assert_equal [], Post.find_related_tags([])    
+  end
+    
   def test_find_tagged_with
     assert_equivalent [posts(:jonathan_sky), posts(:sam_flowers)], Post.find_tagged_with('"Very good"')
     assert_equal Post.find_tagged_with('"Very good"'), Post.find_tagged_with(['Very good'])

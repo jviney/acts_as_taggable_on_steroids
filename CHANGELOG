@@ -2,6 +2,8 @@
 
 * Add TagList#toggle [Pete Yandell].
 
+# Add find_related_tags method [Austin Foncaier].
+
 [30 Jan 08]
 
 * Fix Tag.destroy_unused on Rails 2.0.

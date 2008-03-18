@@ -29,7 +29,33 @@ module ActiveRecord #:nodoc:
       end
       
       module SingletonMethods
-        # Pass either a tag string, or an array of strings or tags
+        # Returns an array of related tags.
+        # Related tags are all the other tags that are found on the models tagged with the provided tags.
+        # 
+        # Pass either a tag, string, or an array of strings or tags.
+        # 
+        # Options:
+        #   :order - SQL Order how to order the tags. Defaults to "count DESC, tags.name".
+        def find_related_tags(tags, options = {})
+          tags = tags.is_a?(Array) ? TagList.new(tags.map(&:to_s)) : TagList.from(tags)
+          
+          related_models = find_tagged_with(tags)
+          
+          return [] if related_models.blank?
+          
+          related_ids = related_models.to_s(:db)
+          
+          Tag.find(:all, options.merge({
+            :select => "#{Tag.table_name}.*, COUNT(#{Tag.table_name}.id) AS count",
+            :joins  => "JOIN #{Tagging.table_name} ON #{Tagging.table_name}.taggable_type = '#{base_class.name}'
+              AND  #{Tagging.table_name}.taggable_id IN (#{related_ids})
+              AND  #{Tagging.table_name}.tag_id = #{Tag.table_name}.id",
+            :order => options[:order] || "count DESC, #{Tag.table_name}.name",
+            :group => "#{Tag.table_name}.id, #{Tag.table_name}.name HAVING #{Tag.table_name}.name NOT IN (#{tags.map { |n| quote_value(n) }.join(",")})"
+          }))
+        end
+        
+        # Pass either a tag, string, or an array of strings or tags.
         # 
         # Options:
         #   :exclude - Find models that are not tagged with the given tags
