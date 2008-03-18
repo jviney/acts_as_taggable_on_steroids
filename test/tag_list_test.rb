@@ -98,4 +98,11 @@ class TagListTest < Test::Unit::TestCase
     tag_list = TagList.from("Three, Four, Five")
     assert_equal %w(Four), tag_list.remove("Three, Five", :parse => true)
   end
+  
+  def test_toggle
+    tag_list = TagList.new("One", "Two")
+    assert_equal %w(One Three), tag_list.toggle("Two", "Three")
+    assert_equal %w(), tag_list.toggle("One", "Three")
+    assert_equal %w(Four), tag_list.toggle("Four")
+  end
 end

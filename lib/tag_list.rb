@@ -33,6 +33,19 @@ class TagList < Array
     self
   end
   
+  # Toggle the presence of the given tags.
+  # If a tag is already in the list it is removed, otherwise it is added.
+  def toggle(*names)
+    extract_and_apply_options!(names)
+    
+    names.each do |name|
+      include?(name) ? delete(name) : push(name)
+    end
+    
+    clean! 
+    self
+  end
+  
   # Transform the tag_list into a tag string suitable for edting in a form.
   # The tags are joined with <tt>TagList.delimiter</tt> and quoted if necessary.
   #

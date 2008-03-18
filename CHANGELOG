@@ -1,3 +1,7 @@
+[18 Mar 08]
+
+* Add TagList#toggle [Pete Yandell].
+
 [30 Jan 08]
 
 * Fix Tag.destroy_unused on Rails 2.0.
