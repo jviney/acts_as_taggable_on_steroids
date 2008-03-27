@@ -112,7 +112,7 @@ module ActiveRecord #:nodoc:
         #  :end_at - Restrict the tags to those created before a certain time
         #  :conditions - A piece of SQL conditions to add to the query
         #  :limit - The maximum number of tags to return
-        #  :order - A piece of SQL to order by. Eg 'tags.count desc' or 'taggings.created_at desc'
+        #  :order - A piece of SQL to order by. Eg 'count desc' or 'taggings.created_at desc'
         #  :at_least - Exclude tags with a frequency less than the given value
         #  :at_most - Exclude tags with a frequency greater than the given value
         def tag_counts(options = {})
