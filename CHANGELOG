@@ -1,3 +1,7 @@
+[28 Mar 08]
+
+* Make Tag#taggings :dependent => :destroy.
+
 [27 Mar 08]
 
 * Fix documentation for tag_counts.

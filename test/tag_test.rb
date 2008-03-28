@@ -31,4 +31,10 @@ class TagTest < Test::Unit::TestCase
     assert_equal Tag.new(:name => 'A'), Tag.new(:name => 'A')
     assert_not_equal Tag.new(:name => 'A'), Tag.new(:name => 'B')
   end
+  
+  def test_taggings_removed_when_tag_destroyed
+    assert_difference "Tagging.count", -Tagging.count(:conditions => { :tag_id => tags(:good).id }) do
+      assert tags(:good).destroy
+    end
+  end
 end
