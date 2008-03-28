@@ -83,7 +83,7 @@
 
 * Add TagList#include? and TagList#empty?
 
-[26 August 2006]
+[26 August 2007]
 
 * Remove deprecated Tag.delimiter. Use TagList.delimiter instead.
 
