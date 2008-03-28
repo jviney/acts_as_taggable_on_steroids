@@ -1,3 +1,7 @@
+[29 Mar 08]
+
+* Improve parsing of quotes inside tags [Arturas Slajus].
+
 [28 Mar 08]
 
 * Make Tag#taggings :dependent => :destroy.

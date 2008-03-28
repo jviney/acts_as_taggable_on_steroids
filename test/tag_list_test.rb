@@ -42,6 +42,11 @@ class TagListTest < Test::Unit::TestCase
     assert_equivalent ['Alpha, Beta', 'Delta', 'Gamma, something'], TagList.from('"Alpha, Beta", Delta, "Gamma, something"')
   end
   
+  def test_from_with_inner_quotes
+    assert_equivalent ["House", "Drum 'n' Bass", "Trance"], TagList.from("House, Drum 'n' Bass, Trance")
+    assert_equivalent ["House", "Drum'n'Bass", "Trance"], TagList.from("House, Drum'n'Bass, Trance")
+  end
+  
   def test_from_removes_white_space
     assert_equivalent %w(Alpha Beta), TagList.from('" Alpha   ", "Beta  "')
     assert_equivalent %w(Alpha Beta), TagList.from('  Alpha,  Beta ')
