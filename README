@@ -76,6 +76,10 @@ A helper is included to assist with generating tag clouds. Include it in your he
   module ApplicationHelper
     include TagsHelper
   end
+  
+You can also use the <tt>counts</tt> method on <tt>Tag</tt> to get the counts for all tags in the database.
+
+  Tag.counts
 
 Here is an example that generates a tag cloud.
 

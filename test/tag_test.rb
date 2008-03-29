@@ -37,4 +37,8 @@ class TagTest < Test::Unit::TestCase
       assert tags(:good).destroy
     end
   end
+  
+  def test_all_counts
+    assert_tag_counts Tag.counts, :good => 4, :bad => 2, :nature => 10, :question => 2, :animal => 3
+  end
 end

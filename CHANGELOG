@@ -2,6 +2,8 @@
 
 * Improve parsing of quotes inside tags [Arturas Slajus].
 
+* Add Tag.counts method.
+
 [28 Mar 08]
 
 * Make Tag#taggings :dependent => :destroy.

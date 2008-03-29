@@ -107,53 +107,31 @@ module ActiveRecord #:nodoc:
         
         # Calculate the tag counts for all tags.
         # 
-        # Options:
-        #  :start_at - Restrict the tags to those created after a certain time
-        #  :end_at - Restrict the tags to those created before a certain time
-        #  :conditions - A piece of SQL conditions to add to the query
-        #  :limit - The maximum number of tags to return
-        #  :order - A piece of SQL to order by. Eg 'count desc' or 'taggings.created_at desc'
-        #  :at_least - Exclude tags with a frequency less than the given value
-        #  :at_most - Exclude tags with a frequency greater than the given value
+        # See Tag.counts for available options.
         def tag_counts(options = {})
           Tag.find(:all, find_options_for_tag_counts(options))
         end
         
         def find_options_for_tag_counts(options = {})
-          options.assert_valid_keys :start_at, :end_at, :conditions, :at_least, :at_most, :order, :limit
           options = options.dup
-          
           scope = scope(:find)
-          start_at = sanitize_sql(["#{Tagging.table_name}.created_at >= ?", options.delete(:start_at)]) if options[:start_at]
-          end_at = sanitize_sql(["#{Tagging.table_name}.created_at <= ?", options.delete(:end_at)]) if options[:end_at]
           
-          conditions = [
-            "#{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)}",
-            options.delete(:conditions),
-            scope && scope[:conditions],
-            start_at,
-            end_at
-          ]
-          
+          conditions = []
+          conditions << send(:sanitize_conditions, options.delete(:conditions)) if options[:conditions]
+          conditions << scope[:conditions] if scope && scope[:conditions]
+          conditions << "#{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)}"
           conditions << type_condition unless descends_from_active_record? 
           conditions.compact!
-          conditions = conditions.join(' AND ')
+          conditions = conditions.join(" AND ")
           
-          joins = ["INNER JOIN #{Tagging.table_name} ON #{Tag.table_name}.id = #{Tagging.table_name}.tag_id"]
-          joins << "INNER JOIN #{table_name} ON #{table_name}.#{primary_key} = #{Tagging.table_name}.taggable_id"
+          joins = ["INNER JOIN #{table_name} ON #{table_name}.#{primary_key} = #{Tagging.table_name}.taggable_id"]
+          joins << options.delete(:joins) if options[:joins]
           joins << scope[:joins] if scope && scope[:joins]
+          joins = joins.join(" ")
           
-          at_least  = sanitize_sql(['COUNT(*) >= ?', options.delete(:at_least)]) if options[:at_least]
-          at_most   = sanitize_sql(['COUNT(*) <= ?', options.delete(:at_most)]) if options[:at_most]
-          having    = [at_least, at_most].compact.join(' AND ')
-          group_by  = "#{Tag.table_name}.id, #{Tag.table_name}.name HAVING COUNT(*) > 0"
-          group_by << " AND #{having}" unless having.blank?
+          options = { :conditions => conditions, :joins => joins }.update(options)
           
-          { :select     => "#{Tag.table_name}.id, #{Tag.table_name}.name, COUNT(*) AS count", 
-            :joins      => joins.join(" "),
-            :conditions => conditions,
-            :group      => group_by
-          }.reverse_merge!(options)
+          Tag.options_for_counts(options)
         end
         
         def caching_tag_list?
