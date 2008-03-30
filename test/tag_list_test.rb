@@ -52,6 +52,12 @@ class TagListTest < Test::Unit::TestCase
     assert_equivalent %w(Alpha Beta), TagList.from('  Alpha,  Beta ')
   end
   
+  def test_from_and_new_treat_both_accept_arrays
+    tags = ["One", "Two"]
+    
+    assert_equal TagList.from(tags), TagList.new(tags)
+  end
+  
   def test_alternative_delimiter
     TagList.delimiter = " "
     

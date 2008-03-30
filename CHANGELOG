@@ -1,3 +1,7 @@
+[30 Mar 08]
+
+* Make TagList.from accept array arguments.
+
 [29 Mar 08]
 
 * Improve parsing of quotes inside tags [Arturas Slajus].
