@@ -141,7 +141,7 @@ module ActiveRecord #:nodoc:
        private
         def tags_condition(tags, table_name = Tag.table_name)
           condition = tags.map { |t| sanitize_sql(["#{table_name}.name LIKE ?", t]) }.join(" OR ")
-          "(" + condition + ")"
+          "(" + condition + ")" unless condition.blank?
         end
       end
       
@@ -190,7 +190,10 @@ module ActiveRecord #:nodoc:
         #
         # The possible options are the same as the tag_counts class method, excluding :conditions.
         def tag_counts(options = {})
-          self.class.tag_counts({ :conditions => self.class.send(:tags_condition, tag_list) }.reverse_merge!(options))
+          return [] if tag_list.blank?
+          
+          options[:conditions] = self.class.send(:merge_conditions, options[:conditions], self.class.send(:tags_condition, tag_list))
+          self.class.tag_counts(options)
         end
         
         def reload_with_tag_list(*args) #:nodoc:

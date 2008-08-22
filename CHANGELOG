@@ -1,3 +1,9 @@
+[23 Aug 08]
+
+* Fix tag_counts instance method when no tags are present.
+
+* Make tag_counts instance_method merge any :conditions passed to it.
+
 [30 Mar 08]
 
 * Make TagList.from accept array arguments.

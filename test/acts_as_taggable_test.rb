@@ -154,6 +154,20 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_tag_counts users(:jonathan).magazines.tag_counts, :good => 1
   end
   
+  def test_tag_counts_on_model_instance
+    assert_tag_counts photos(:jonathan_dog).tag_counts, :animal => 3, :nature => 3
+  end
+  
+  def test_tag_counts_on_model_instance_merges_conditions
+    assert_tag_counts photos(:jonathan_dog).tag_counts(:conditions => "tags.name = 'Crazy animal'"), :animal => 3
+  end
+  
+  def test_tag_counts_on_model_instance_with_no_tags
+    photo = Photo.create!
+    
+    assert_tag_counts photo.tag_counts, {}
+  end
+  
   def test_tag_counts_respects_custom_table_names
     Tagging.table_name = "categorisations"
     Tag.table_name = "categories"
