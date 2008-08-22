@@ -188,7 +188,7 @@ module ActiveRecord #:nodoc:
         
         # Calculate the tag counts for the tags used by this model.
         #
-        # The possible options are the same as the tag_counts class method, excluding :conditions.
+        # The possible options are the same as the tag_counts class method.
         def tag_counts(options = {})
           return [] if tag_list.blank?
           
