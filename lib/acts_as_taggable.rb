@@ -118,7 +118,7 @@ module ActiveRecord #:nodoc:
           
           conditions = []
           conditions << send(:sanitize_conditions, options.delete(:conditions)) if options[:conditions]
-          conditions << scope[:conditions] if scope && scope[:conditions]
+          conditions << send(:sanitize_conditions, scope[:conditions]) if scope && scope[:conditions]
           conditions << "#{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)}"
           conditions << type_condition unless descends_from_active_record? 
           conditions.compact!

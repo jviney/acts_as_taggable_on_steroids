@@ -1,3 +1,7 @@
+[17 Sep 08]
+
+* Sanitize scope conditions in find_options_for_tag_counts [Rémy-Christophe Schermesser]
+
 [23 Aug 08]
 
 * Fix tag_counts instance method when no tags are present.

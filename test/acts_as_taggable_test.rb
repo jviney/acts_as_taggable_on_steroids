@@ -168,6 +168,12 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_tag_counts photo.tag_counts, {}
   end
   
+  def test_tag_counts_should_sanitize_scope_conditions
+    Photo.send :with_scope, :find => { :conditions => ["tags.id = ?", tags(:animal).id] } do
+      assert_tag_counts Photo.tag_counts, :animal => 3
+    end
+  end
+  
   def test_tag_counts_respects_custom_table_names
     Tagging.table_name = "categorisations"
     Tag.table_name = "categories"
