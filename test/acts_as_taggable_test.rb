@@ -10,6 +10,10 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equivalent [tags(:bad), tags(:question)], Post.find_related_tags([tags(:good), tags(:nature)])
   end
   
+  def test_find_tagged_with_include_and_order
+    assert_equal photos(:sam_sky, :sam_flower, :jonathan_dog),  Photo.find_tagged_with("Nature", :order => "photos.title DESC", :include => :user)
+  end
+  
   def test_find_related_tags_with_non_existent_tags
     assert_equal [], Post.find_related_tags("ABCDEFG")
     assert_equal [], Post.find_related_tags(['HIJKLM'])
