@@ -77,6 +77,11 @@ module ActiveRecord #:nodoc:
           
           taggings_alias, tags_alias = "#{table_name}_taggings", "#{table_name}_tags"
           
+          joins = [
+            "INNER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = #{quote_value(base_class.name)}",
+            "INNER JOIN #{Tag.table_name} #{tags_alias} ON #{tags_alias}.id = #{taggings_alias}.tag_id"
+          ]
+          
           if options.delete(:exclude)
             conditions << <<-END
               #{table_name}.id NOT IN
@@ -86,23 +91,38 @@ module ActiveRecord #:nodoc:
             END
           else
             if options.delete(:match_all)
-              conditions << <<-END
-                (SELECT COUNT(*) FROM #{Tagging.table_name}
-                 INNER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id
-                 WHERE #{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)} AND
-                 taggable_id = #{table_name}.id AND
-                 #{tags_condition(tags)}) = #{tags.size}
-              END
+              joins << joins_for_match_all_tags(tags)
             else
               conditions << tags_condition(tags, tags_alias)
             end
           end
           
           { :select => "DISTINCT #{table_name}.*",
-            :joins => "INNER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = #{quote_value(base_class.name)} " +
-                      "INNER JOIN #{Tag.table_name} #{tags_alias} ON #{tags_alias}.id = #{taggings_alias}.tag_id",
+            :joins => joins.join(" "),
             :conditions => conditions.join(" AND ")
           }.reverse_merge!(options)
+        end
+        
+        def joins_for_match_all_tags(tags)
+          joins = []
+          
+          tags.each_with_index do |tag, index|
+            taggings_alias, tags_alias = "taggings_#{index}", "tags_#{index}"
+
+            join = <<-END
+              INNER JOIN #{Tagging.table_name} #{taggings_alias} ON
+                #{taggings_alias}.taggable_id = #{table_name}.#{primary_key} AND
+                #{taggings_alias}.taggable_type = #{quote_value(base_class.name)}
+
+              INNER JOIN #{Tag.table_name} #{tags_alias} ON
+                #{taggings_alias}.tag_id = #{tags_alias}.id AND
+                #{tags_alias}.name = ?
+            END
+
+            joins << sanitize_sql([join, tag])
+          end
+          
+          joins.join(" ")
         end
         
         # Calculate the tag counts for all tags.

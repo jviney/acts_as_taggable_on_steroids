@@ -12,7 +12,7 @@ end
 
 # Search for fixtures first
 fixture_path = File.dirname(__FILE__) + '/fixtures/'
-Dependencies.load_paths.insert(0, fixture_path)
+ActiveSupport::Dependencies.load_paths.insert(0, fixture_path)
 
 require 'active_record/fixtures'
 

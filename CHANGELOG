@@ -1,3 +1,7 @@
+[18 Feb 09]
+
+* Greatly improve speed when using find_tagged_with and :match_all.
+
 [17 Sep 08]
 
 * Sanitize scope conditions in find_options_for_tag_counts [Rémy-Christophe Schermesser]
