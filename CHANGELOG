@@ -1,6 +1,6 @@
 [18 Feb 09]
 
-* Greatly improve speed when using find_tagged_with and :match_all.
+* Greatly improve speed when using find_tagged_with and :match_all [notonthehighstreet.com].
 
 [17 Sep 08]
 
