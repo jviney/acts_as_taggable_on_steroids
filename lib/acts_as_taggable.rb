@@ -11,7 +11,9 @@ module ActiveRecord #:nodoc:
           has_many :tags, :through => :taggings
           
           before_save :save_cached_tag_list
-          after_save :save_tags
+          
+          after_create :save_tags
+          after_update :save_tags
           
           include ActiveRecord::Acts::Taggable::InstanceMethods
           extend ActiveRecord::Acts::Taggable::SingletonMethods
