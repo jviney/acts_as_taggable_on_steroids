@@ -27,7 +27,7 @@ class TagTest < ActiveSupport::TestCase
   
   def test_equality
     assert_equal tags(:good), tags(:good)
-    assert_equal Tag.find(1), Tag.find(1)
+    assert_equal Tag.find(tags(:good).id), Tag.find(tags(:good).id)
     assert_equal Tag.new(:name => 'A'), Tag.new(:name => 'A')
     assert_not_equal Tag.new(:name => 'A'), Tag.new(:name => 'B')
   end
