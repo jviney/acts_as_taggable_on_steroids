@@ -1,3 +1,11 @@
+[3 Jun 09]
+
+* Upgrade tests for Rails 2.3
+
+[18 Mar 09]
+
+* Change callbacks used to save tags.
+
 [18 Feb 09]
 
 * Greatly improve speed when using find_tagged_with and :match_all [notonthehighstreet.com].

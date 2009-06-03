@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/abstract_unit'
 
-class TaggingTest < Test::Unit::TestCase
+class TaggingTest < ActiveSupport::TestCase
   fixtures :tags, :taggings, :posts
   
   def test_tag

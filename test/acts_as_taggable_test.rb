@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/abstract_unit'
 
-class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
+class ActsAsTaggableOnSteroidsTest < ActiveSupport::TestCase
   fixtures :tags, :taggings, :posts, :users, :photos, :subscriptions, :magazines
 
   def test_find_related_tags_with
@@ -204,8 +204,8 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
     assert_equivalent ["Nature", "Question"], posts(:jonathan_rain).tag_list
     posts(:jonathan_rain).taggings.reload
     
-    # Only an update of the posts table should be executed
-    assert_queries 1 do
+    # Only an update of the posts table should be executed, the other two queries are for savepoints
+    assert_queries 3 do
       posts(:jonathan_rain).update_attributes!(:tag_list => posts(:jonathan_rain).tag_list.to_s)
     end
     
@@ -375,7 +375,7 @@ class ActsAsTaggableOnSteroidsTest < Test::Unit::TestCase
   end
 end
 
-class ActsAsTaggableOnSteroidsFormTest < Test::Unit::TestCase
+class ActsAsTaggableOnSteroidsFormTest < ActiveSupport::TestCase
   fixtures :tags, :taggings, :posts, :users, :photos
   
   include ActionView::Helpers::FormHelper

@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/abstract_unit'
 
-class TagsHelperTest < Test::Unit::TestCase
+class TagsHelperTest < ActiveSupport::TestCase
   fixtures :tags, :taggings, :posts
   
   include TagsHelper

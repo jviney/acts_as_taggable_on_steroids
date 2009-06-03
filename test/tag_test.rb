@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/abstract_unit'
 
-class TagTest < Test::Unit::TestCase
+class TagTest < ActiveSupport::TestCase
   fixtures :tags, :taggings, :users, :photos, :posts
   
   def test_name_required
