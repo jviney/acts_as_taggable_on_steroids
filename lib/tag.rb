@@ -44,8 +44,10 @@ class Tag < ActiveRecord::Base
       start_at = sanitize_sql(["#{Tagging.table_name}.created_at >= ?", options.delete(:start_at)]) if options[:start_at]
       end_at = sanitize_sql(["#{Tagging.table_name}.created_at <= ?", options.delete(:end_at)]) if options[:end_at]
       
+      conditions_from_options = options.delete(:conditions)
+      conditions_from_options = sanitize_sql_for_conditions(conditions_from_options) if conditions_from_options
       conditions = [
-        options.delete(:conditions),
+        conditions_from_options,
         start_at,
         end_at
       ].compact
