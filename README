@@ -13,7 +13,7 @@ such as tests, smarter tag assignment, and tag cloud calculations.
 
 == Installation
 
-  ruby script/plugin install http://svn.viney.net.nz/things/rails/plugins/acts_as_taggable_on_steroids
+  ruby script/plugin install http://github.com/jviney/acts_as_taggable_on_steroids.git
 
 == Usage
 
@@ -48,6 +48,11 @@ You can also add or remove arrays of tags.
 
   p.tag_list.add("Great", "Awful")
   p.tag_list.remove("Funny")
+  
+In your views you should use something like the following:
+
+  <%= f.label :tag_list %>
+  <%= f.text_field :tag_list, :size => 80 %>
 
 === Finding tagged objects
 
