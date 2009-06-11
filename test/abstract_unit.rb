@@ -35,6 +35,8 @@ class ActiveSupport::TestCase #:nodoc:
   self.use_transactional_fixtures = true
   self.use_instantiated_fixtures  = false
   
+  fixtures :all
+  
   def assert_equivalent(expected, actual, message = nil)
     if expected.first.is_a?(ActiveRecord::Base)
       assert_equal expected.sort_by(&:id), actual.sort_by(&:id), message

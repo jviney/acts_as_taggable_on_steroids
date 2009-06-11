@@ -1,8 +1,6 @@
 require File.dirname(__FILE__) + '/abstract_unit'
 
 class ActsAsTaggableOnSteroidsTest < ActiveSupport::TestCase
-  fixtures :tags, :taggings, :posts, :users, :photos, :subscriptions, :magazines
-
   def test_find_related_tags_with
     assert_equivalent [tags(:good), tags(:bad), tags(:question)], Post.find_related_tags("nature")
     assert_equivalent [tags(:nature)], Post.find_related_tags([tags(:good)])
@@ -376,13 +374,11 @@ class ActsAsTaggableOnSteroidsTest < ActiveSupport::TestCase
 end
 
 class ActsAsTaggableOnSteroidsFormTest < ActiveSupport::TestCase
-  fixtures :tags, :taggings, :posts, :users, :photos
-  
   include ActionView::Helpers::FormHelper
   
   def test_tag_list_contents
     fields_for :post, posts(:jonathan_sky) do |f|
-      assert_match /Very good, Nature/, f.text_field(:tag_list)
+      assert_match /Nature, Very good/, f.text_field(:tag_list)
     end
   end
 end

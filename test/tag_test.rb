@@ -1,8 +1,6 @@
 require File.dirname(__FILE__) + '/abstract_unit'
 
 class TagTest < ActiveSupport::TestCase
-  fixtures :tags, :taggings, :users, :photos, :posts
-  
   def test_name_required
     t = Tag.create
     assert_match /blank/, t.errors[:name].to_s
@@ -53,11 +51,12 @@ class TagTest < ActiveSupport::TestCase
   end
 
   def test_all_counts_with_hash_conditions
-    assert_tag_counts Tag.counts(:conditions => {
-      :taggings => {
-        :created_at => (DateTime.parse('2006-08-14 23:59') .. DateTime.parse('4000-01-01'))
-      }}),
-      :question => 1, :bad => 1, :animal => 1, :nature => 2, :good => 2
+    tag_counts = Tag.counts(
+      :conditions => {
+        :taggings => { :created_at => (DateTime.parse('2006-08-14 23:59') .. DateTime.parse('4000-01-01')) }
+      }
+    )
+    
+    assert_tag_counts tag_counts, :question => 1, :bad => 1, :animal => 1, :nature => 2, :good => 2
   end
-
 end
