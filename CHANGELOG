@@ -1,3 +1,11 @@
+[11 Jun 09]
+
+* Remove deprecated TagCountsExtension.
+
+* Update tests to use foxy fixtures [Jonas Wagner]
+
+* Allow hash conditions to be passed to Tag.counts [Jonas Wagner]
+
 [3 Jun 09]
 
 * Upgrade tests for Rails 2.3

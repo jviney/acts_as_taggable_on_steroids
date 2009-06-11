@@ -18,7 +18,6 @@ Gem::Specification.new do |s|
     "init.rb",
     "lib/acts_as_taggable.rb",
     "lib/tag.rb",
-    "lib/tag_counts_extension.rb",
     "lib/tag_list.rb",
     "lib/tagging.rb",
     "lib/tags_helper.rb",
