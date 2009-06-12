@@ -13,7 +13,7 @@ such as tests, smarter tag assignment, and tag cloud calculations.
 
 == Installation
 
-  ruby script/plugin install http://github.com/jviney/acts_as_taggable_on_steroids.git
+  ruby script/plugin install git://github.com/jviney/acts_as_taggable_on_steroids.git
 
 == Usage
 
