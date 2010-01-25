@@ -378,7 +378,7 @@ class ActsAsTaggableOnSteroidsFormTest < ActiveSupport::TestCase
   
   def test_tag_list_contents
     fields_for :post, posts(:jonathan_sky) do |f|
-      assert_match /Nature, Very good/, f.text_field(:tag_list)
+      assert_match posts(:jonathan_sky).tag_list.to_s, f.text_field(:tag_list)
     end
   end
 end
