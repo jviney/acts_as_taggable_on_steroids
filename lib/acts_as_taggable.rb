@@ -147,8 +147,8 @@ module ActiveRecord #:nodoc:
           conditions = conditions.join(" AND ")
           
           joins = ["INNER JOIN #{table_name} ON #{table_name}.#{primary_key} = #{Tagging.table_name}.taggable_id"]
-          joins << options.delete(:joins) if options[:joins]
-          joins << scope[:joins] if scope && scope[:joins]
+          joins << options.delete(:joins) if options[:joins].present?
+          joins << scope[:joins] if scope && scope[:joins].present?
           joins = joins.join(" ")
           
           options = { :conditions => conditions, :joins => joins }.update(options)
