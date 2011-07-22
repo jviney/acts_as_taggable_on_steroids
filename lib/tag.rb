@@ -67,5 +67,13 @@ class Tag < ActiveRecord::Base
         :group      => group_by
       }.update(options)
     end
+
+    def truncate(tag_name)
+      tag_name.first(length_limit)
+    end
+
+    def length_limit
+      columns_hash["name"].limit
+    end
   end
 end
