@@ -19,7 +19,7 @@ Rails 2.*
 
 Rails 3:
 
-  rails plugin install git://github.com/jviney/acts_as_taggable_on_steroids.git
+  rails plugin install git://github.com/MaherSaif/acts_as_taggable_on_steroids.git
 
 == Usage
 
