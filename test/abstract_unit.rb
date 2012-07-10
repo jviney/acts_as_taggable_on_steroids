@@ -3,16 +3,14 @@ require 'test/unit'
 begin
   require File.dirname(__FILE__) + '/../../../../config/environment'
 rescue LoadError
-  require 'rubygems'
-  gem 'activerecord'
-  gem 'actionpack'
   require 'active_record'
   require 'action_controller'
+  require 'active_support/dependencies'
 end
 
 # Search for fixtures first
 fixture_path = File.dirname(__FILE__) + '/fixtures/'
-ActiveSupport::Dependencies.load_paths.insert(0, fixture_path)
+ActiveSupport::Dependencies.autoload_paths.insert(0, fixture_path)
 
 require "active_record/test_case"
 require "active_record/fixtures"
