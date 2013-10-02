@@ -2,9 +2,9 @@ require File.dirname(__FILE__) + '/abstract_unit'
 
 class ActsAsTaggableOnSteroidsTest < ActiveSupport::TestCase
   def test_find_related_tags_with
-    assert_equivalent [tags(:good), tags(:bad), tags(:question)], Post.find_related_tags("nature")
+    assert_equivalent [tags(:good), tags(:bad), tags(:question), tags(:nature)], Post.find_related_tags("nature")
     assert_equivalent [tags(:nature)], Post.find_related_tags([tags(:good)])
-    assert_equivalent [tags(:bad), tags(:question)], Post.find_related_tags(["Very Good", "Nature"])        
+    assert_equivalent [tags(:bad), tags(:good), tags(:question)], Post.find_related_tags(["Very Good", "Nature"])
     assert_equivalent [tags(:bad), tags(:question)], Post.find_related_tags([tags(:good), tags(:nature)])
   end
 
@@ -203,7 +203,7 @@ class ActsAsTaggableOnSteroidsTest < ActiveSupport::TestCase
     posts(:jonathan_rain).taggings.reload
 
     # Only an update of the posts table should be executed, the other two queries are for savepoints
-    assert_queries 3 do
+    assert_queries 1 do
       posts(:jonathan_rain).update_attributes!(:tag_list => posts(:jonathan_rain).tag_list.to_s)
     end
 
@@ -375,10 +375,12 @@ end
 
 class ActsAsTaggableOnSteroidsFormTest < ActiveSupport::TestCase
   include ActionView::Helpers::FormHelper
-  
+
   def test_tag_list_contents
     fields_for :post, posts(:jonathan_sky) do |f|
-      assert_match posts(:jonathan_sky).tag_list.to_s, f.text_field(:tag_list)
+      text_field = f.text_field(:tag_list)
+      assert_match /Very good/, text_field
+      assert_match /Nature/, text_field
     end
   end
 end
