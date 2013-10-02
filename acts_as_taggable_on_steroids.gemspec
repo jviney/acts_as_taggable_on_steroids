@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name     = "acts_as_taggable_on_steroids"
-  s.version  = "1.1"
-  s.date     = "2009-06-11"
+  s.version  = "1.2"
+  s.date     = "2010-01-01"
   s.summary  = "Rails plugin that is based on acts_as_taggable by DHH but includes extras such as tests, smarter tag assignment, and tag cloud calculations."
   s.email    = "jonathan.viney@gmail.com"
   s.homepage = "http://github.com/jviney/acts_as_taggable_on_steroids"
@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
     "generators/acts_as_taggable_migration/templates/migration.rb",
     "init.rb",
     "lib/acts_as_taggable.rb",
+    "lib/acts_as_taggable_on_steroids.rb",
     "lib/tag.rb",
     "lib/tag_list.rb",
     "lib/tagging.rb",
@@ -27,7 +28,7 @@ Gem::Specification.new do |s|
     "Rakefile",
     "README",
     ]
-  s.test_files = [  
+  s.test_files = [
     "test/abstract_unit.rb",
     "test/acts_as_taggable_test.rb",
     "test/database.yml",

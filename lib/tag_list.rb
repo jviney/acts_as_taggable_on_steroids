@@ -84,26 +84,25 @@ class TagList < Array
     #   tag_list = TagList.from("One , Two,  Three")
     #   tag_list # ["One", "Two", "Three"]
     def from(source)
-      tag_list = new
-      
-      case source
-      when Array
-        tag_list.add(source)
-      else
-        string = source.to_s.dup
+      new.tap do |tag_list|
         
-        # Parse the quoted tags
-        [
-          /\s*#{delimiter}\s*(['"])(.*?)\1\s*/,
-          /^\s*(['"])(.*?)\1\s*#{delimiter}?/
-        ].each do |re|
-          string.gsub!(re) { tag_list << $2; "" }
+        case source
+          when Array
+            tag_list.add(source)
+          else
+            string = source.to_s.dup
+            
+            # Parse the quoted tags
+            [
+              /\s*#{delimiter}\s*(['"])(.*?)\1\s*/,
+              /^\s*(['"])(.*?)\1\s*#{delimiter}?/
+            ].each do |re|
+              string.gsub!(re) { tag_list << $2; "" }
+            end
+            
+            tag_list.add(string.split(delimiter))
         end
-        
-        tag_list.add(string.split(delimiter))
       end
-      
-      tag_list
     end
   end
 end

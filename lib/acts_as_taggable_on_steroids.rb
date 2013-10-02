@@ -1,0 +1,1 @@
+load File.join(File.dirname(__FILE__), 'acts_as_taggable.rb')
