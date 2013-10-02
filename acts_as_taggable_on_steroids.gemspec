@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
     "generators/acts_as_taggable_migration/acts_as_taggable_migration_generator.rb",
     "generators/acts_as_taggable_migration/templates",
     "generators/acts_as_taggable_migration/templates/migration.rb",
-    "init.rb",
+    "rails/init.rb",
     "lib/acts_as_taggable.rb",
     "lib/tag.rb",
     "lib/tag_list.rb",
